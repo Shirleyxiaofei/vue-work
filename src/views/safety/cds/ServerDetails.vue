@@ -352,6 +352,7 @@
                             :show-overflow-tooltip="true"
                             :data="ecmListData3"
                             style="width: 100%"
+                            @filter-change="errorFilterChange"
                             @selection-change="handleSelectionChange">
                       <el-table-column
                               type="selection"
@@ -373,7 +374,7 @@
                               label="状态"
                               width="80"
                               :filters="[{ text: '未处理', value: '0' }, { text: '已处理', value: '1' }]"
-                              :filter-method="filterTag"
+                              column-key = 'filter1'
                               :filter-multiple="true"
                       >
                       <template slot-scope="scope">
@@ -453,6 +454,7 @@
                     <el-table
                             :show-overflow-tooltip="true"
                             :data="ecmListData7"
+                            @filter-change="errorFilterChange"
                             style="width: 100%"
                             @selection-change="handleSelectionChange">
                       <el-table-column
@@ -476,6 +478,7 @@
                               label="状态"
                               width="80"
                               :filters="[{ text: '未处理', value: '未处理' }, { text: '已处理', value: '已处理' }]"
+                              column-key = 'filter2'
                               :filter-multiple="false"
                       >
                       </el-table-column>
@@ -533,6 +536,7 @@
                     <el-table
                             :show-overflow-tooltip="true"
                             :data="ecmListData4"
+                            @filter-change="errorFilterChange"
                             style="width: 100%"
                             @selection-change="handleSelectionChange">
                       <el-table-column
@@ -555,7 +559,7 @@
                               label="状态"
                               width="80"
                               :filters="[{ text: '未处理', value: '0' }, { text: '已处理', value: '1' }]"
-                              :filter-method="filterTag"
+                              column-key = 'filter3'
                               :filter-multiple="true"
                       >
                         <template slot-scope="scope">
@@ -633,6 +637,7 @@
                     <el-table
                             :show-overflow-tooltip="true"
                             :data="ecmListData5"
+                            @filter-change="errorFilterChange"
                             style="width: 100%"
                             @selection-change="handleSelectionChange">
                       <el-table-column
@@ -655,7 +660,7 @@
                               label="状态"
                               width="80"
                               :filters="[{ text: '未处理', value: '0' }, { text: '已处理', value: '1' }]"
-                              :filter-method="filterTag"
+                              column-key = 'filter4'
                               :filter-multiple="true"
                       >
                       <template slot-scope="scope">
@@ -731,6 +736,7 @@
                     <el-table
                             :show-overflow-tooltip="true"
                             :data="ecmListData6"
+                            @filter-change="errorFilterChange"
                             style="width: 100%"
                             @selection-change="handleSelectionChange">
                       <el-table-column
@@ -753,7 +759,7 @@
                               label="状态"
                               width="80"
                               :filters="[{ text: '未处理', value: '0' }, { text: '已处理', value: '1' }]"
-                              :filter-method="filterTag"
+                              column-key = 'filter5'
                               :filter-multiple="true"
                       >
                       <template slot-scope="scope">
@@ -842,6 +848,7 @@
                     <el-table
                             :show-overflow-tooltip="true"
                             :data="integrityData"
+                            @filter-change="itegrityFilterChange"
                             style="width: 100%"
                             @selection-change="handleSelectionChange">
                       <el-table-column
@@ -868,7 +875,7 @@
                               label="状态"
                               width="80"
                               :filters="[{ text: '未处理', value: '0' }, { text: '已处理', value: '1' }]"
-                              :filter-method="filterTag"
+                              column-key = 'filter1'
                               :filter-multiple="true"
                       >
                         <template slot-scope="scope">
@@ -897,7 +904,7 @@
                               width="100"
                               label="严重级别"
                               :filters="[{ text: '严重', value: '7' }]"
-                              :filter-method="filterTag1"
+                              column-key = 'filter2'
                               :filter-multiple="true"
                               >
                         <template slot-scope="scope">
@@ -1057,6 +1064,7 @@
         totalPageLE3: 1,
         totalPageLE4 : 1,
         totalPageIE : 1,
+        exception_status:'0,1',
         dialogUpdateVisiblePose: false,
         dialogUpdateVisiblePose1: false,
         areas: [
@@ -1133,8 +1141,59 @@
     },
 
     methods:{
-      abcde(){
-        
+      errorFilterChange(value) {
+        if(value.filter1){
+          // 筛选状态
+          if(value.filter1.length>0){
+            this.exception_status = value.filter1.join(',')
+          }else{
+            this.exception_status = '1,0'
+          }
+          this.getLogExceptionRegion()
+        }else if(value.filter2){
+          console.log(value.filter2)
+          // 筛选状态
+          if(value.filter2.length>0){
+            this.exception_status = value.filter2.join(',')
+          }else{
+            this.exception_status = '1,0'
+          }
+        }else if(value.filter3){
+          // 筛选状态
+          if(value.filter3.length>0){
+            this.exception_status = value.filter3.join(',')
+          }else{
+            this.exception_status = '1,0'
+          }
+          this.getLogExceptionIp()
+        }else if(value.filter4){
+          // 筛选状态
+          if(value.filter4.length>0){
+            this.exception_status = value.filter4.join(',')
+          }else{
+            this.exception_status = '1,0'
+          }
+          this.getLogExceptionUser()
+        }else if(value.filter5){
+          // 筛选状态
+          if(value.filter5.length>0){
+            this.exception_status = value.filter5.join(',')
+          }else{
+            this.exception_status = '1,0'
+          }
+          this.getLogExceptionTime()
+        }
+      },
+      itegrityFilterChange(value){
+        if(value.filter1){
+          // 筛选状态
+          if(value.filter1.length>0){
+            this.exception_status = value.filter1.join(',')
+          }else{
+            this.exception_status = '1,0'
+          }
+          this.getLogExceptionRegion()
+        }
       },
       filterTag(value, row) {
         return row.status === value;
@@ -1256,13 +1315,14 @@
             paramStr = '<zoneId>'+ this.currentId +'</zoneId>'+
                       '<agentGuid>'+ this.agentGuid +'</agentGuid>'
         agentDetails(ser,paramStr).then( res => {
-            let serverDetails = eval('('+ res +')');
+            let serverDetails = eval('(' + res.vmDetail + ')');
             this.areas[0].uuid = serverDetails.vmName;
             this.areas[1].uuid = serverDetails.id;
             this.areas[2].uuid = serverDetails.zoneName;
-            this.areas[3].uuid = serverDetails.ipaddress;
-            this.areas[4].uuid = serverDetails.pulicip;
+            this.areas[3].uuid = serverDetails.publicip;
+            this.areas[4].uuid = serverDetails.nic[0].ipaddress;
             this.areas[5].uuid = serverDetails.osStyle;
+            this.areas[6].uuid = res.statusName;
         }).catch( err => {
           console.log('获取数据存储失败',err)
         })
@@ -1322,6 +1382,54 @@
           this.totalPageSM = res.totalElements;
         })
       },
+      //异常登录-异地登录
+      getLogExceptionRegion(){
+          let ser = 'remoteGetExceptionEventList',
+          paramStr = '<paramStr>{"paramStr":{"currentPage":"'+ this.currentPage3 +'","pageSize":"'+ this.pageSize3 +'","zoneId":"'+ this.currentId +'","status":"'+ this.exception_status +'","warningtype":"4","host_id":"'+ this.hostId +'","queryParam":""}}</paramStr>';
+        logException(ser,paramStr).then( res => {
+          let ecmListData3 = res.eventList;
+          this.ecmListData3 = ecmListData3;
+          this.totalPageLE1 = res.totalElements;
+        }).catch( err => {
+          console.log('获取数据存储失败', err )
+        })
+      },
+      //异常登录-非法ip登录
+      getLogExceptionIp(){
+          let ser = 'remoteGetExceptionEventList',
+          paramStr = '<paramStr>{"paramStr":{"currentPage":"'+ this.currentPage3 +'","pageSize":"'+ this.pageSize3 +'","zoneId":"'+ this.currentId +'","status":"'+ this.exception_status +'","warningtype":"1","host_id":"'+ this.hostId +'","queryParam":""}}</paramStr>';
+        logException(ser,paramStr).then( res => {
+          let ecmListData4 = res.eventList;
+          this.ecmListData4 = ecmListData4;
+          this.totalPageLE2 = res.totalElements;
+        }).catch( err => {
+          console.log('获取数据存储失败', err )
+        })
+      },
+      //异常登录-非法账号登录
+      getLogExceptionUser(){
+          let ser = 'remoteGetExceptionEventList',
+          paramStr = '<paramStr>{"paramStr":{"currentPage":"'+ this.currentPage3 +'","pageSize":"'+ this.pageSize3 +'","zoneId":"'+ this.currentId +'","status":"'+ this.exception_status +'","warningtype":"3","host_id":"'+ this.hostId +'","queryParam":""}}</paramStr>';
+        logException(ser,paramStr).then( res => {
+          let ecmListData5 = res.eventList;
+          this.ecmListData5 = ecmListData5;
+          this.totalPageLE3 = res.totalElements;
+        }).catch( err => {
+          console.log('获取数据存储失败', err )
+        })
+      },
+      //异常登录-非法时间登录
+      getLogExceptionTime(){
+          let ser = 'remoteGetExceptionEventList',
+          paramStr = '<paramStr>{"paramStr":{"currentPage":"'+ this.currentPage3 +'","pageSize":"'+ this.pageSize3 +'","zoneId":"'+ this.currentId +'","status":"'+ this.exception_status +'","warningtype":"2","host_id":"'+ this.hostId +'","queryParam":""}}</paramStr>';
+        logException(ser,paramStr).then( res => {
+          let ecmListData6 = res.eventList;
+          this.ecmListData6 = ecmListData6;
+          this.totalPageLE4 = res.totalElements;
+        }).catch( err => {
+          console.log('获取数据存储失败', err )
+        })
+      },
       // 异常登录
       getLogException(){
         // console.log(111)
@@ -1337,10 +1445,6 @@
         logException(ser,paramStr).then( res => {
           let ecmListData3 = res.eventList;
           this.ecmListData3 = ecmListData3;
-          for( let key in ecmListData3){
-            let booStatus = ecmListData3[key].status === "0" ? "未处理" : "已处理"
-            this.ecmListData3[key].statusi = booStatus;
-          }
           this.totalPageLE1 = res.totalElements;
         }).catch( err => {
           console.log('获取数据存储失败', err )
@@ -1349,10 +1453,6 @@
         logException(ser,paramStr1).then( res => {
           let ecmListData4 = res.eventList;
           this.ecmListData4 = ecmListData4;
-          for( let key in ecmListData4){
-            let booStatus = ecmListData4[key].status === "0" ? "未处理" : "已处理"
-            this.ecmListData4[key].statusi = booStatus;
-          }
           this.totalPageLE2 = res.totalElements;
         }).catch( err => {
           console.log('获取数据存储失败', err )
@@ -1383,10 +1483,6 @@
         integrityEventList(ser,paramsData).then(res=>{
           let itd = res.eventList;
           this.integrityData = itd;
-          for(let key in itd){
-            let seri = itd[key].Severity == 7 ? "严重" : "seri";
-            this.integrityData[key].Severityi = seri;
-          }
           this.totalPageIE = res.totalElements;
         }).catch( err => {
           console.log("获取存储数据失败",err)

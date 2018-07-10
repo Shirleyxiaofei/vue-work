@@ -58,7 +58,10 @@
           <el-table-column
             label="操作系统">
             <template slot-scope="scope">
-              {{scope.row.os_type}}
+              <el-tooltip placement="bottom" class="item" effect="dark">
+                <div slot="content">{{scope.row.os_type}}</div>
+                <div class="serviceStyle">{{scope.row.os_type}}</div>
+              </el-tooltip>
             </template>
           </el-table-column>
           <el-table-column
@@ -126,12 +129,17 @@
         </el-table>
         <div class="pagination">
           <el-pagination
+            v-if="totalPage>10"
             @size-change="handleSizeChange"
             @current-change="getServerRegion"
             :current-page="currentPage"
             :page-size="10"
             layout="total, sizes, prev, pager, next, jumper"
             :total="totalPage">
+          </el-pagination>
+          <el-pagination
+            v-else
+            layout="">
           </el-pagination>
         </div>
       </div>
@@ -376,10 +384,10 @@
       },
       // 表头筛选
       filterChange(value) {
+
         if(value.filter1){
           // 筛选状态
           if(value.filter1.length>0){
-            var arr = [] , arr1=[] ,arr2 = [],arr3=[]
             for(var i=0;i<value.filter1.length;i++){
               arr = eval('(' + value.filter1[i] + ')'),
               arr1.push(arr)
@@ -694,7 +702,6 @@
         margin-right:20px;
       }
      .content{
-       background:#ffffff;
         .content_top{
           background: #ffffff;
           padding-top: 34px;
@@ -713,7 +720,7 @@
         overflow:hidden;
         span{
           display: block;
-          min-width: 68px;
+          padding:0 10px;
           height: 34px;
           background: #f0f2f7;
           float: left;
@@ -818,7 +825,12 @@
         float:right;
         margin: 20px;
       }
+    .serviceStyle{
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
     }
+  }
 </style>
 <style lang="scss">
 .ecm_monitor{
