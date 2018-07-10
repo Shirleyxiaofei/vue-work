@@ -1,7 +1,7 @@
 import safetyRequest from '@/utils/safetyRequest'
 import { getsafetyToken } from '@/utils/auth'
 // let token = getsafetyToken()
-let token = '8EBEE7E350C2AEE549EA7DB2D9510B84'
+let token = '9F784E957C4579073BC6F04393BB3822'
 
 // 总览页面接口
 export function amounts(ser) {
@@ -619,6 +619,21 @@ export function setEmail(ser,paramStr) {
               '</soapenv:Envelope>'
    return safetyRequest({
     url:'services/adminWebService?wsdl',
+    method:'post',
+    data:data
+  })
+}
+export function IPcity(ser,paramStr) {
+  let data = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://serviceImpl.api.ydadmin.cts.com/">' +
+                '<soapenv:Header/>' +
+                '<soapenv:Body>' +
+                  '<ser:'+ser+'>' +
+                    '<token>'+token+'</token>' + paramStr +
+                  '</ser:'+ser+'>' +
+                '</soapenv:Body>' +
+              '</soapenv:Envelope>'
+   return safetyRequest({
+    url:'services/customService?wsdl',
     method:'post',
     data:data
   })

@@ -74,7 +74,8 @@ export default {
           title: '用户中心',
           path: "",
           fun: () => {
-            this.$router.push("/user/userInfo");
+            // this.$router.push("/user/userInfo");
+            window.location.href = 'https://vip.ctyun.cn/console/index/#/user/userInfo'
           }
         },
         {
@@ -120,7 +121,7 @@ export default {
     fadeOut() {
        getToken('logout','').then(res => {
          console.log(res)
-        window.location.href = res;  
+        // window.location.href = res;  
       }).catch(err => {
         console.log("获取错误");
       })

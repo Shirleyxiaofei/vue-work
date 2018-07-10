@@ -11,6 +11,8 @@ import serverDetails from '@/views/safety/cds/ServerDetails'
 import waringSetting from '@/views/safety/waringSetting'  //告警设置
 import indList from '@/views/safety/IndList'     //异常登录
 import loginsecurityset from '@/views/safety/loginsecurityset'    //登陆安全设置
+import checkServer from '@/views/safety/fileCheck/checkServer' //配置生效服务器
+import checkTime from '@/views/safety/fileCheck/checkTime' // 配置检测频率
 
 
 
@@ -69,7 +71,19 @@ let Router ={
 			path: 'fileCheck/checkEvent',
 			name: 'checkEvent',
 			component: checkEvent,
+		},
+		{
+			path: 'fileCheck/checkServer',
+			name: 'checkServer',
+			component: checkServer,
+		},
+		{
+			path: 'fileCheck/checkTime',
+			name: 'checkTime',
+			component: checkTime,
 		}
+
+
 	]
 };
 export default Router;

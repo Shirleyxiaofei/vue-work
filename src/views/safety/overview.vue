@@ -1,81 +1,92 @@
 <template>
     <div class='safety_overview'>
-        <el-container>
-            <el-main class="p_t_l_0 ">
-                <!-- 头部 -->
-                <el-row :gutter="20">
-                    <el-col :span="8" >
-                        <div class="safety-block">
-                            <div class="block-tip border_b_1">ECS保护状态</div>
-                            <div class="block-article">
-                                <el-row class="h90"> 
-                                    <el-col :span="12" class="grid-content">
-                                        <p class="m_b_7_t_6">
-                                            <span class="font_28">{{amount.onlineHostCount}}</span>
-                                            <span class="font_12_c">(台)</span>
-                                        </p>
-                                        <span class="font_12">在线</span>
-                                    </el-col>
-                                    <el-col :span="12"  class="grid-content">
-                                        <p class="m_b_7_t_6">
-                                            <span class="font_28">{{amount.outlineHostCount}}</span>
-                                            <span class="font_12_c">(台)</span>
-                                        </p>
-                                        <span class="font_12">离线</span>
-                                    </el-col>
-                                </el-row>
-                            </div>
-                        </div>
-                    </el-col>
-                    <el-col :span="8" >
-                        <div class="safety-block">
-                            <div class="block-tip">异常登录</div>
-                            <div class="block-article">
-                                <el-row class="h90"> 
-                                    <el-col :span="14" class="grid-content">
-                                        <div class="err-login"></div>
-                                    </el-col>
-                                    <el-col :span="10"  class="grid-content">
-                                        <p class="m_15">
-                                            <span class="font_28">{{amount.exceptionEventCount}}</span>
-                                            <span class="font_12_c">(条)</span>
-                                        </p>
-                                    </el-col>
-                                </el-row>
-                            </div>
-                        </div>
-                    </el-col>
-                    <el-col :span="8" >
-                        <div class="safety-block">
-                            <div class="block-tip">文件一致性检测</div>
-                            <div class="block-article">
-                                <el-row class="h90"> 
-                                    <el-col :span="14" class="grid-content">
-                                        <div class="monitor-filetest"></div>
-                                    </el-col>
-                                    <el-col :span="10"  class="grid-content">
-                                        <p class="m_15">
-                                            <span class="font_28">{{amount.integrityEventCount}}</span>
-                                            <span class="font_12_c">(条)</span>
-                                        </p>
-                                    </el-col>
-                                </el-row>
-                            </div>
-                        </div>
-                    </el-col>
-                </el-row> 
-            </el-main>  
-            <el-aside style="width:161px">
-                <div class="p_t_l_0_update ">
-                    <p class="p_t_l_0_update_w1">当前版本：基础版</p>
-                    <p class="p_t_l_0_update_w2">升级专业版>></p>
+        <!-- 头部 -->
+        <el-row :gutter="20">
+            <el-col :span="10" >
+                <div class="safety-block">
+                    <div class="block-tip border_b_1">ECS保护状态</div>
+                    <div class="block-article">
+                        <el-row class="h90"> 
+                            <el-col :span="4" class="grid-content">
+                                <p class="m_b_7_t_6">
+                                    <span class="font_28">{{amount.hostListCount}}</span>
+                                    <span class="font_12_c">(台)</span>
+                                </p>
+                                <span class="font_12" >总数量</span>
+                            </el-col>
+                            <el-col :span="5" class="grid-content">
+                                <p class="m_b_7_t_6">
+                                    <span class="font_28" style="color:#3dd6c1">{{amount.inProtectHostCount}}</span>
+                                    <span class="font_12_c">(台)</span>
+                                </p>
+                                <span class="font_12" >防护中</span>
+                            </el-col>
+                            <el-col :span="5"  class="grid-content">
+                                <p class="m_b_7_t_6">
+                                    <span class="font_28">{{amount.closeProtectHostCount}}</span>
+                                    <span class="font_12_c">(台)</span>
+                                </p>
+                                <span class="font_12 c_666">关闭防护</span>
+                            </el-col>
+                            <el-col :span="5" class="grid-content">
+                                <p class="m_b_7_t_6">
+                                    <span class="font_28">{{amount.notActiveHostCount}}</span>
+                                    <span class="font_12_c">(台)</span>
+                                </p>
+                                <span class="font_12 c_666">未激活</span>
+                            </el-col>
+                            <el-col :span="5"  class="grid-content">
+                                <p class="m_b_7_t_6">
+                                    <span class="font_28" style="color:#f75c68">{{amount.outlineHostCount}}</span>
+                                    <span class="font_12_c">(台)</span>
+                                </p>
+                                <span class="font_12"  >离线</span>
+                            </el-col>
+                        </el-row>
+                    </div>
                 </div>
-            </el-aside>
-        </el-container>    
+            </el-col>
+            <el-col :span="7">
+                <div class="safety-block">
+                    <div class="block-tip">异常登录</div>
+                    <div class="block-article">
+                        <el-row class="h90"> 
+                            <el-col :span="14" class="grid-content">
+                                <div class="err-login"></div>
+                            </el-col>
+                            <el-col :span="10"  class="grid-content">
+                                <p class="m_15">
+                                    <span class="font_28">{{amount.exceptionEventCount}}</span>
+                                    <span class="font_12_c">(条)</span>
+                                </p>
+                            </el-col>
+                        </el-row>
+                    </div>
+                </div>
+            </el-col>
+            <el-col :span="7" >
+                <div class="safety-block">
+                    <div class="block-tip">文件一致性检测</div>
+                    <div class="block-article">
+                        <el-row class="h90"> 
+                            <el-col :span="14" class="grid-content">
+                                <div class="monitor-filetest"></div>
+                            </el-col>
+                            <el-col :span="10"  class="grid-content">
+                                <p class="m_15">
+                                    <span class="font_28">{{amount.integrityEventCount}}</span>
+                                    <span class="font_12_c">(条)</span>
+                                </p>
+                            </el-col>
+                        </el-row>
+                    </div>
+                </div>
+            </el-col>
+        </el-row>   
         <!-- 主体-->
-        <div class="main-chart">
+        <div class="main-chart" style="margin-top:20px;">
             <div class="chart-tip border_b_1">
-                <p >入侵检测</p>
+                <p >安全检测</p>
                 <div class="float_r">
                     <el-radio-group v-model="chooseDays" size="small" id='myDIV'  @change="getExceptionEvent">
                         <el-radio-button label="7" >7天</el-radio-button>
@@ -87,7 +98,7 @@
             </div>
             <el-row :gutter="20" >
                 <el-col :span="14"  class="border_r_1"  style="padding:20px 20px 20px 30px;">
-                    <p class="font_12">入侵检测/异常登录事件趋势</p>
+                    <p class="font_12">文件一致性检测/异常登录事件趋势</p>
                     <line-chart :chart-data="lineChartData"  v-loading='loading1'></line-chart>
                 </el-col>
                     <el-col :span="10" style="padding:20px 30px 20px 20px;">
@@ -124,14 +135,18 @@ export default {
             lineChartData: {
                 actualData: [],
                 lineChartTime:[],
+                expectedData: [],
             },
             boxLists:[{agent_ip:"",sum:0,host_Id:"", widthData:'0%' }],
             chooseDays: '7',
             amount: {
-                onlineHostCount: 0,
+                hostListCount: 0,
+                inProtectHostCount: 0,
+                closeProtectHostCount: 0,
                 exceptionEventCount: 0,
+                notActiveHostCount: 0,
                 outlineHostCount: 0,
-                integrityEventCount: 0
+                integrityEventCount: 0,
             },
             loginToken: '',
             loading1: true,
@@ -163,14 +178,20 @@ export default {
             exceptionEvent(ser,paramsData).then(res=>{
                 console.log('获取异常登录事件成功', res);
                 var list =  res.exceptionEventList;
+                var list1 = res.integrityEventList;
                 var newList = [];
+                var newList1 = [];
                 var newListTime = [];
                 for (var i=0 ;i<list.length;i++){
                     newList.push(list[i].sum)
                     newListTime.push(list[i].createTime)
                 }
+                for (var j=0 ;j<list1.length;j++){
+                    newList1.push(list1[j].sum)
+                }
                 this.lineChartData.actualData = newList;
                 this.lineChartData.lineChartTime = newListTime;
+                this.lineChartData.expectedData = newList1
                 this.loading1 = false;
             }).catch(err=>{
                 console.log('获取异常登录事件失败',err)
@@ -184,7 +205,7 @@ export default {
                 console.log('获取安全事件主机信息成功', res);
                 var list =  res.list;
                 for (var i=0 ;i<list.length;i++){
-                    list[i].widthData = (list[i].sum/list[0].sum*0.83*100).toFixed(1)+'%'
+                    list[i].widthData = (list[i].sum/list[0].sum*0.80*100).toFixed(1)+'%'
                 }
                 this.boxLists = list;
                 this.loading2 = false;
@@ -221,6 +242,8 @@ export default {
   .p_t_l_0 {
     padding-left: 0;
     padding-top: 0;
+    padding-right: 0;
+    // padding: 0;
     color: #333;
   }
   .safety-block {
@@ -247,6 +270,9 @@ export default {
   }
   .font_12 {
     font-size: 12px;
+  }
+  .c_666{
+      color: #666666;
   }
   .font_28 {
     font-size: 28px;
@@ -392,5 +418,9 @@ export default {
     .box_txt{
         width: 200px;
     }
+}
+.el-table th>.cell {
+    color: #333;
+    font-weight: 700;
 }
 </style>

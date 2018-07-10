@@ -8,7 +8,7 @@ import exception from '@/utils/exception'
 // let baseUrl = 'http://172.18.208.18:8091';   
 // 上线地址
 // let baseUrl = 'http://ctcss.ctyun.cn:8091';
-
+// 
 // 本地运行
 let baseUrl = process.env.NODE_ENV === "production" ? '/' : '/safety/';
 // baseUrl += 'Yidun_admin/'
@@ -46,6 +46,7 @@ service.interceptors.request.use(config => {
   Promise.reject(error)
 })
 
+// var flag = true;
 // respone拦截器
 service.interceptors.response.use(
   // response => response ,
@@ -56,6 +57,7 @@ service.interceptors.response.use(
     if (result.status == -2) {
       console.log('拦截器--登录失效')
       // firstGetToken()
+      // flag = false;
     } else if (result.description == '没有查询到数据！') {
       return []
     } else if (result.status == 0 || result.status == -1) {

@@ -69,8 +69,8 @@
                                 {{ item.title}}
                             </router-link>
                             <el-menu :default-active="''+defaultIndex" class="el-menu-vertical-demo"
-                                     background-color="#fff" text-color="#606266" :default-openeds='openeds'
-                                     active-text-color="#ffd04b" v-else-if="item.isSub"  @open='handleOpen'>
+                                     background-color="#fff" text-color="#606266" 
+                                     active-text-color="#ffd04b" v-else-if="item.isSub"  @select='handleSelect'>
                                 <el-submenu :index="''+index" :key="index" class="el-menu-vertical-demo" :collapse="isCollapse">
                                     <template slot="title">
                                         <svg-icon icon-class="next" class="el-submenu__icon-arrow"></svg-icon>
@@ -126,27 +126,28 @@
                 }
             },
 
-            handleOpen(index){
-                console.log(index,333333333333)
-                this.defaultIndex = parseInt(index);
+            handleSelect(index){
+                // console.log(index,333333333333)
+                // this.defaultIndex = parseInt(index);
                 
                 // console.log(typeof this.defaultIndex)  //number类型
                 // console.log(this.defaultIndex,888888888888);
                 
-                localStorage.setItem(Index,this.defaultIndex);           
+                sessionStorage.setItem('Index',index);           
             },
             jumpPush(index){
+                let baseUrl = 'https://vip.ctyun.cn/'
                 // console.log(index,1111111111)
                 if(index == 0){
-                    window.location.href='http://172.18.143.236:8999/console/index/#/ecm/ecmDashboard'
+                    window.location.href= baseUrl + 'console/index/#/ecm/ecmDashboard'
                 }else if(index == 1){
-                    window.location.href='http://172.18.143.236:8999/console/index/#/ebs/ebsList'
+                    window.location.href= baseUrl + 'console/index/#/ebs/ebsList'
                 }else if(index == 2){
-                    window.location.href='http://172.18.143.236:8999/console/index/#/vpc/vpcList'
+                    window.location.href= baseUrl + 'console/index/#/vpc/vpcList'
                 }else if(index == 3){
-                    window.location.href='http://172.18.143.236:8999/console/index/#/elb/elbList'
+                    window.location.href= baseUrl + 'console/index/#/elb/elbList'
                 }else if(index == 4){
-                    window.location.href='http://172.18.143.236:8999/console/index/#/monitor/overview'
+                    window.location.href= baseUrl + 'console/index/#/monitor/overview'
                  }
                 if(index == 5){
                     this.isOpenSubMenu = true;
@@ -170,6 +171,7 @@
                 // this.$router.push(this.subList[0].path);
             },
             isTab(){
+                this.defaultIndex = sessionStorage.getItem('Index');
                 this.showListDetail(5);  //让下标为5的有一个默认样式
                 
                 this.routerName = this.$route.matched[0].name;
@@ -286,9 +288,8 @@
                 routerName:'',
                 metaDepend:'',
                 subMenuShow:false,
-                defaultIndex: 1-0,
+                defaultIndex: '0-0',
                 activeIndex: 0 ,
-                openeds:['0'],
                 isCollapse: false
             }
         },
@@ -296,12 +297,7 @@
             // this.showListDetail(5)
             // this.jumpPush(5);      
             // window.location.hash = '#'+'/safety/overview?ticket=';      
-            console.log('我是进来了');
             this.isTab();   
-                       
-            let index = localStorage.getItem(Index);    
-            console.log(index,'index')
-            this.handleOpen()
         },
         computed: {
             navAsideWidth: function(){

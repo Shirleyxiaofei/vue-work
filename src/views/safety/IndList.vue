@@ -27,12 +27,13 @@
       <el-row>
         <el-col :span="15">
           <div class="content_top content_top_left">
-            <el-button class="node_name h_btn" type="plain"  @click="markDispose">标记为已处理</el-button>
+            <el-button class="node_name h_btn" :class="{'active':isActive}"
+             type="plain"  @click="markDispose" :disabled="isDisabled">标记为已处理</el-button>
           </div>
         </el-col>
         <el-col :span="9">
           <div class="content_top content_top_right" >
-            <el-input placeholder="请输入服务器或IP名称" v-model="searchExceList" class="input-with-select" size="small" style="width:350px">
+            <el-input placeholder="请输入服务器或IP名称" v-model="searchExceList" class="input-with-select" size="small" style="width:350px" @change="changeSearch" @keyup.native='showIndList'>
               <el-button slot="append" icon="el-icon-search" @click="getExceptionList"></el-button>
             </el-input>
           </div>
@@ -48,6 +49,7 @@
                 >
           <el-table-column
                 type="selection"
+                :selectable="checkboxInit"
                 width="50">
           </el-table-column>
           <el-table-column
@@ -66,7 +68,7 @@
             label="登录时间"
             width="180">
             <template slot-scope="scope">
-              {{scope.row.logindate}}
+              {{scope.row.logindate==""?"--":scope.row.logindate}}
             </template>
           </el-table-column>
           <el-table-column
@@ -75,26 +77,32 @@
             :filters="[{ text: '未处理', value: '0' }, { text: '已处理', value: '1' }]"
             column-key = 'filter'
             :filter-multiple="true"
-            filter-placement="bottom">
+            filter-placement="bottom-start">
             <template slot-scope="scope">
-              {{scope.row.status == 0 ? '未处理' : '已处理'}}
+              <span :class="{'red':scope.row.status==0,'green':scope.row.status==1}">{{scope.row.status == 0 ? '未处理' : '已处理'}}</span>
             </template>
           </el-table-column>
           <el-table-column
                   :show-overflow-tooltip="true"
-                  prop="loginuser"
                   label="对应用户名"
                   width="100">
+            <template slot-scope="scope">
+              {{scope.row.loginuser==""?"--":scope.row.loginuser}}
+            </template>
           </el-table-column>
           <el-table-column
-                  prop="logintype"
                   label="登录类型"
                   width="100">
+            <template slot-scope="scope">
+              {{scope.row.logintype==""?"--":scope.row.logintype}}
+            </template>
           </el-table-column>
           <el-table-column
-                  prop="sourceip"
                   label="登录源IP"
                   width="180">
+            <template slot-scope="scope">
+              {{scope.row.sourceip==""?"--":scope.row.sourceip}}
+            </template>
           </el-table-column>
           <el-table-column
               prop="warningtype"
@@ -106,7 +114,7 @@
               
               filter-placement="bottom-start">
               <template slot-scope="scope">
-                {{scope.row.warningtype == 1 ? '非法IP登录' : scope.row.warningtype == 2 ? '非法时间登录' : scope.row.warningtype == 3 ? '非法账号登录' : '异地登录'}}
+                {{scope.row.warningtype == 1 ? '非法IP登录' : scope.row.warningtype == 2 ? '非法时间登录' : scope.row.warningtype == 3 ? '非法账号登录' : scope.row.warningtype == 4 ?'异地登录' : '爆破登录'}}
               </template>
           </el-table-column>
           <el-table-column
@@ -123,21 +131,36 @@
       </div>
       <div class="content-bottom">
           <el-pagination
+           v-if="totalPage>10"
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page="currentPage"
-            :page-size="10"
+            :page-size="pageSize"
             layout="total, sizes, prev, pager, next, jumper"
             :total="totalPage">
           </el-pagination>
-        
+         <el-pagination
+            v-else
+            layout="">
+          </el-pagination>
         </div>
     </div>
     <el-dialog style='width:80%;margin:0px auto 50px;'
-        title="选择应用的云服务器"
+        title="选择应用的云服务器" :close-on-click-modal='false'
         :visible.sync="dialogUpdateVisible">
-        <p
-          style="text-align:center;display:block;margin:40px auto;">是否确定标记为已处理</p>
+        <!-- <div style="margin-right:20px;display:inline-block;">123123
+            <i>
+              <svg-icon icon-class="warn" style="font-size:50px;color:#f9cd76;"></svg-icon>
+            </i>
+          </div> -->
+        <p style="text-align:center;display:block;margin:40px auto;">
+          <i>
+            <svg-icon icon-class="warn" style="font-size:50px;color:#f9cd76;"></svg-icon>
+          </i>
+          <span style="margin:20px;">
+            是否确定标记为已处理
+          </span>
+        </p>
         <div slot="footer" class="dialog-footer">
           <el-button
             @click="dialogUpdateVisible = false"
@@ -145,6 +168,28 @@
           <el-button
             type="primary"
             @click="getRemoteUpdateExceptionStatus()"
+            class="f_btn f_btn_r">确 定</el-button>
+        </div>
+      </el-dialog>
+      <el-dialog style='width:80%;margin:0px auto 50px;'
+        title="选择应用的云服务器" :close-on-click-modal='false'
+        :visible.sync="dialogUpdateVisible1">
+        <p
+          style="text-align:center;display:block;margin:40px auto;">
+           <i>
+            <svg-icon icon-class="warn" style="font-size:50px;color:#f9cd76;"></svg-icon>
+          </i>
+          <span style="margin:20px;">
+            是否确定标记为已处理
+          </span>
+          </p>
+        <div slot="footer" class="dialog-footer">
+          <el-button
+            @click="dialogUpdateVisible1 = false"
+            class="f_btn f_btn_l">取 消</el-button>
+          <el-button
+            type="primary"
+            @click="getRemoteUpdateExceptionStatus1()"
             class="f_btn f_btn_r">确 定</el-button>
         </div>
       </el-dialog>
@@ -169,11 +214,15 @@ export default {
       pageSize: 10,
       searchExceList: "",
       dialogUpdateVisible:false,
+      dialogUpdateVisible1:false,
       biaojiid: '',
       multipleSelection: [],
       atype:'2',
       tableStatus: '0,1',
-      warningtype: '1,2,3,4'
+      warningtype: '1,2,3,4,5',
+      isDisabled: true,
+      isActive: false,
+      
     };
   },
   created() {
@@ -182,6 +231,12 @@ export default {
   },
 
   methods: {  
+    checkboxInit(row,index){
+      if (row.status == 1) 
+        return 0;//不可勾选
+      else
+        return 1;//可勾选
+    },
     // 表头筛选
     filterChange(value) {
       if(value.filter){
@@ -196,7 +251,7 @@ export default {
         if( value.filter1.length > 0){
           this.warningtype = value.filter1.join(',')
         }else{
-          this.warningtype = '1,2,3,4'
+          this.warningtype = '1,2,3,4,5'
         }
       }
       this.getExceptionList()
@@ -258,9 +313,13 @@ export default {
     //         message: '取消标记'
     //       });
     // },
+    changeSearch(value){
+      this.currentPage = 1;
+    },
     handleSizeChange(val) {
       console.log(`每页 ${val} 条`);
       this.pageSize = val;
+      this.currentPage = 1;
       console.log(this.pageSize)
       this.getExceptionList()
     },
@@ -323,6 +382,14 @@ export default {
           console.log("获取地区数量失败", err);
         });
     },
+    //回车事件
+    showIndList:function(ev){
+      // console.log(88888888888)
+      if(ev.keyCode == 13){
+        // alert('你按回车键了');
+        this.getExceptionList();
+      }
+    },
     // 列表
     getExceptionList() {
       this.loading = true;
@@ -344,18 +411,18 @@ export default {
         });
     },
     getModel(sshexceptioneventid){
-      this.dialogUpdateVisible = true
-      this.biaojiid = sshexceptioneventid
+      this.dialogUpdateVisible1 = true
+      this.biaojiid1 = sshexceptioneventid
       console.log(this.biaojiid)
     },
     // 标记为已处理
-    getRemoteUpdateExceptionStatus(){
+    getRemoteUpdateExceptionStatus1(){
       let ser = "remoteUpdateExceptionStatus";
-      let paramStr ='<Ids>'+this.biaojiid+'</Ids>';
+      let paramStr ='<Ids>'+this.biaojiid1+'</Ids>';
       // console.log(this.biaojiid)         
       exceptionList(ser,paramStr).then(res=>{
         console.log('异常登陆标记成功',res);
-        this.dialogUpdateVisible = false        
+        this.dialogUpdateVisible1 = false        
         this.$message({
             message: '标记成功'
           });
@@ -368,21 +435,31 @@ export default {
       })
     },
     handleSelectionChange(val) {
-      this.multipleSelection = val;
+      this.multipleSelection = val;      
+      if(this.multipleSelection.length==1){
+        this.isActive  = true;
+        this.isDisabled = false;
+      }else{
+        this.isActive  = false;
+        this.isDisabled = true;
+      }
       // console.log(this.multipleSelection);//返回一个数组对象
     },
     
   //点击表格上部标记为已处理时触发的事件
     markDispose(){
       if(this.multipleSelection.length == 0){
-        this.$message({
-            message: '请选择一项数据进行处理'
-          });
-      }else if(this.multipleSelection.length > 1){
+        this.isDisabled = true
+        // this.$message({
+        //     message: '请选择一项数据进行处理'
+        //   });
+      }else if(this.multipleSelection.length = 1){
+        this.isDisabled = false
         this.$message({
             message: '只能选择一条数据进行处理，请重新选择'
           });
       }else if(this.multipleSelection[0].status == 1){
+        this.isDisabled = false
         this.$message({
             message: '您所选择的数据已处理过，请重新选择'
           });
@@ -421,6 +498,11 @@ export default {
 </script>
 <style lang="scss" scoped="scoped">
 .ind_monitor {
+  .active {
+    border: 1px solid #56d6c4;
+    background: #56d6c4;
+    color: #fff;
+  }
   background: #ffffff;
   border-bottom: 1px solid #f8f9fb;
   position: relative;
@@ -460,32 +542,6 @@ export default {
       font-size: 14px;
       color: #333;
       padding: 20px 0px;
-    }
-    .areaButton {
-      display: block;
-      padding: 0 10px;
-      height: 30px;
-      margin-bottom: 15px;
-      background: #f0f2f7;
-      float: left;
-      text-align: center;
-      line-height: 30px;
-      border-radius: 5px;
-      margin-right: 10px;
-      font-size: 11px;
-      cursor: pointer;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-    }
-    .areaButton-bg {
-      background: #f9cd76;
-      color: #ffffff;
-    }
-    .areaButton:hover {
-      background: #f9cd76;
-      color: #ffffff;
     }
   }
   .right {
@@ -553,11 +609,6 @@ export default {
   }
   .input-with-select .el-input-group__prepend {
     background-color: #fff;
-  }
-  .el-table .el-table__header-wrapper thead tr th {
-    height: 30px;
-    background-color: #f0f2f7;
-    padding: 0;
   }
   .el-table .el-table__body-wrapper tbody tr td {
     height: 35px;
@@ -658,6 +709,12 @@ export default {
     font-size:12px;
     margin-top:-5px
   }
+  .red{
+      color:#f6585e;
+    }
+    .green{
+      color:#52ec29;
+    }
 }
 .el-table-filter{
   text-align: left !important ;

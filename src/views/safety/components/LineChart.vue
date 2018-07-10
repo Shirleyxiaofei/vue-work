@@ -3,23 +3,23 @@
 </template>
 
 <script>
-import echarts from "echarts";
-require("echarts/theme/macarons"); // echarts theme
+import echarts from 'echarts'
+require('echarts/theme/macarons') // echarts theme
 // import { debounce } from '@/utils'
 
 export default {
   props: {
     className: {
       type: String,
-      default: "chart"
+      default: 'chart'
     },
     width: {
       type: String,
-      default: "100%"
+      default: '100%'
     },
     height: {
       type: String,
-      default: "380px"
+      default: '380px'
     },
     autoResize: {
       type: Boolean,
@@ -27,19 +27,15 @@ export default {
     },
     chartData: {
       type: Object
-    },
-    // chartTime: {
-    //   type: Array
-    // }
+    }
   },
   data() {
     return {
-      chart: null,
-      // chartTimes: this.chartTime
-    };
+      chart: null
+    }
   },
   mounted() {
-    this.initChart();
+    this.initChart()    
     function debounce(func, wait, immediate) {
       let timeout, args, context, timestamp, result;
 
@@ -77,10 +73,10 @@ export default {
     if (this.autoResize) {
       this.__resizeHanlder = debounce(() => {
         if (this.chart) {
-          this.chart.resize();
+          this.chart.resize()
         }
-      }, 100);
-      window.addEventListener("resize", this.__resizeHanlder);
+      }, 100)
+      window.addEventListener('resize', this.__resizeHanlder)
     }
 
 
@@ -105,12 +101,14 @@ export default {
   },
   beforeDestroy() {
     if (!this.chart) {
-      return;
+      return
     }
     if (this.autoResize) {
-      window.removeEventListener("resize", this.__resizeHanlder);
+      window.removeEventListener('resize', this.__resizeHanlder)
     }
 
+    const sidebarElm = document.getElementsByClassName('sidebar-container')[0]
+    sidebarElm.removeEventListener('transitionend', this.__resizeHanlder)
     // const sidebarElm2 = document.getElementsByClassName("Menu")[0];
     // sidebarElm2.removeEventListener("transitionend", this.__resizeHanlder);
 
@@ -129,21 +127,15 @@ export default {
     chartData: {
       deep: true,
       handler(val) {
-        this.setOptions(val);
+        this.setOptions(val)
       }
-    },
-    // chartTimes: {
-    //   deep: true,
-    //   handler(val) {
-    //     this.setOptions(val);
-    //   }
-    // }
+    }
   },
   methods: {
-    setOptions({actualData,lineChartTime} = {}) {
+    setOptions({ expectedData, actualData ,lineChartTime} = {}) {
       this.chart.setOption({
         xAxis: {
-          // data: ["2018-05-21", "2018-05-22", "2018-05-23", "2018-05-24", "2018-05-25", "2018-05-26", "2018-05-26","2018-05-26","2018-05-26","2018-05-26","2018-05-26","2018-05-26","2018-05-26","2018-05-26","2018-05-26","2018-05-26","2018-05-26","2018-05-26","2018-05-26","2018-05-26","2018-05-26","2018-05-26","2018-05-26"],
+          // data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
           data: lineChartTime,
           boundaryGap: false,
           axisTick: {
@@ -158,9 +150,9 @@ export default {
           containLabel: true
         },
         tooltip: {
-          trigger: "axis",
+          trigger: 'axis',
           axisPointer: {
-            type: "cross"
+            type: 'cross'
           },
           padding: [5, 10]
         },
@@ -170,37 +162,50 @@ export default {
           }
         },
         legend: {
-          data: []
+          data: ['文件一致性检测', '异常登陆']
         },
-        series: [
-          {
-            name: "count",
-            smooth: true,
-            type: "line",
-            itemStyle: {
-              normal: {
-                color: "#3888fa",
-                lineStyle: {
-                  color: "#3888fa",
-                  width: 2
-                },
-                areaStyle: {
-                  color: "#f3f8ff"
-                }
+        series: [{
+          name: '文件一致性检测', itemStyle: {
+            normal: {
+              color: '#FF005A',
+              lineStyle: {
+                color: '#FF005A',
+                width: 2
               }
-            },
-            data: actualData,
-            animationDuration: 2800,
-            animationEasing: "quadraticOut"
-          }
-        ]
-      });
+            }
+          },
+          smooth: true,
+          type: 'line',
+          data: expectedData,
+          animationDuration: 2800,
+          animationEasing: 'cubicInOut'
+        },
+        {
+          name: '异常登陆',
+          smooth: true,
+          type: 'line',
+          itemStyle: {
+            normal: {
+              color: '#3888fa',
+              lineStyle: {
+                color: '#3888fa',
+                width: 2
+              },
+              areaStyle: {
+                color: '#f3f8ff'
+              }
+            }
+          },
+          data: actualData,
+          animationDuration: 2800,
+          animationEasing: 'quadraticOut'
+        }]
+      })
     },
     initChart() {
-      this.chart = echarts.init(this.$el, "macarons");
-      this.setOptions(this.chartData);
+      this.chart = echarts.init(this.$el, 'macarons')
+      this.setOptions(this.chartData)
     }
-
   }
-};
+}
 </script>

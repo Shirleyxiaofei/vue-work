@@ -41,13 +41,19 @@
                 </el-table>
                 <div class="content-bottom">
                     <el-pagination
+                    v-if="totalNum1>2"
                     @size-change="handleSizeChange1"
                     @current-change="handleCurrentChange1"
                     :current-page="currentPage1"
                     :page-sizes="[2, 5, 10, 20]"
-                    :page-size="2"
+                    :page-size="pageSize1"
+                    :page-count="pageCount1"
                     layout="total, sizes, prev, pager, next, jumper"
                     :total="totalNum1">
+                  </el-pagination>
+                  <el-pagination
+                      v-else
+                      layout="">
                   </el-pagination>
                 </div>
             </el-row>
@@ -101,14 +107,20 @@
                     </el-table-column>
                 </el-table>
                 <div class="content-bottom">
-                    <el-pagination
+                  <el-pagination
+                    v-if="totalNum2>2"
                     @size-change="handleSizeChange2"
                     @current-change="handleCurrentChange2"
                     :current-page="currentPage2"
                     :page-sizes="[2, 5, 10, 20]"
-                    :page-size="2"
+                    :page-size="pageSize2"
+                    :page-count="pageCount2"                    
                     layout="total, sizes, prev, pager, next, jumper"
                     :total="totalNum2">
+                  </el-pagination>
+                  <el-pagination
+                      v-else
+                      layout="">
                   </el-pagination>
                 </div>
             </el-row>
@@ -163,13 +175,19 @@
                 </el-table>
                 <div class="content-bottom">
                     <el-pagination
+                    v-if="totalNum3>2"
                     @size-change="handleSizeChange3"
                     @current-change="handleCurrentChange3"
                     :current-page="currentPage3"
                     :page-sizes="[2, 5, 10, 20]"
-                    :page-size="2"
+                    :page-size="pageSize3"
+                    :page-count="pageCount3"
                     layout="total, sizes, prev, pager, next, jumper"
                     :total="totalNum3">
+                  </el-pagination>
+                  <el-pagination
+                      v-else
+                      layout="">
                   </el-pagination>
                 </div>
             </el-row>
@@ -224,18 +242,24 @@
                 </el-table>
                 <div class="content-bottom">
                     <el-pagination
+                    v-if="totalNum4>2"
                     @size-change="handleSizeChange4"
                     @current-change="handleCurrentChange4"
                     :current-page="currentPage4"
                     :page-sizes="[2, 5, 10, 20]"
-                    :page-size="2"
+                    :page-size="pageSize4"
+                    :page-count="pageCount4"
                     layout="total, sizes, prev, pager, next, jumper"
                     :total="totalNum4">
+                  </el-pagination>
+                  <el-pagination
+                    v-else
+                    layout="">
                   </el-pagination>
                 </div>
             </el-row>
         </div>
-        <el-dialog title="添加常用登录地" :visible.sync="dialogFormVisible1" :close-on-click-modal='false' style="width:1000px;">
+        <el-dialog title="添加常用登录地" :visible.sync="dialogFormVisible1" :close-on-click-modal='false' style='width:80%;margin:0px auto 50px;'>
           <el-form :model="form1">
             <span style="color:red;"> * &nbsp;</span><span style="margin-right:45px;">选择要添加的常用登录地：</span>
             <div class="dialogloginArea1">
@@ -280,7 +304,7 @@
             <el-button class="f_btn f_btn_r" @click="addExceptionAddLegalArea()">确 定</el-button>
           </div>
         </el-dialog>
-        <el-dialog title="编辑常用登录地" :visible.sync="dialogFormVisible11" :close-on-click-modal='false' style="width:1000px;">
+        <el-dialog title="编辑常用登录地" :visible.sync="dialogFormVisible11" :close-on-click-modal='false' style='width:80%;margin:0px auto 50px;'>
           <!-- {{editTableRow}}{{editform1}} -->
           <el-form :model="editTableRow">
             <span style="color:red;"> * &nbsp;</span><span style="margin-right:45px;">选择要添加的常用登录地：</span>
@@ -305,7 +329,7 @@
               </el-select>
               <el-tooltip class="item" effect="dark" content="切换地域后服务器列表会清空" placement="top-end">
                 <span>&nbsp;<i class="el-icon-question"></i>&nbsp;</span>
-              </el-tooltip>
+              </el-tooltip><br>
             <!-- <span style="color:red;"> * &nbsp;</span> -->
             <!-- {{editform1.serve}} -->
             <span style="color:red;">&nbsp;&nbsp;</span>
@@ -322,14 +346,15 @@
             <el-button class="f_btn f_btn_r" @click="setLegalConfigServer('1',editTableRow.legalconfigid)">确 定</el-button>
           </div>
         </el-dialog>
-        <el-dialog title="添加合法登录IP" :visible.sync="dialogFormVisible2" :close-on-click-modal='false' style="width:1000px;">
+        <el-dialog title="添加合法登录IP" :visible.sync="dialogFormVisible2" :close-on-click-modal='false' style='width:80%;margin:0px auto 50px;'>
          <!-- {{addform2}} -->
           
           <el-form :model="addform2" status-icon :rules="rules2" ref="addform2" label-width="192px">
             <!-- <span style="color:red;display:inline-block;margin-bottom:10px;">输入要添加的合法登录IP：</span> -->
               <!-- <el-input v-model="addform2.IP" auto-complete="off" style="width:350px;margin-left:15px;" placeholder="如:192.168.0.1/27"></el-input><br> -->
             <el-form-item label="输入要添加的合法登录IP：" prop="IP" class="red-star1" style="margin-bottom:8px;">
-              <el-input type="IP" v-model="addform2.IP" auto-complete="off"  style="width:250px;margin-left:-10px" ></el-input>
+              <el-input type="IP" v-model="addform2.IP" auto-complete="off"  style="width:250px;margin-left:-10px;" ></el-input>
+              <div class='publicIp' style="width:80px;margin-left:-10px;color:#ccc;position:absolute;top:0px;left:120px;" >{{descrip}}</div>
             </el-form-item>
             <span style="color:red;">&nbsp;&nbsp;</span>              
               <span style="margin-right:45px;">地域：</span>
@@ -357,7 +382,7 @@
             <el-button class="f_btn f_btn_r" @click="addExceptionAddLegalIP('addform2')">确 定</el-button>
           </div>
         </el-dialog>
-        <el-dialog title="编辑合法登录IP" :visible.sync="dialogFormVisible22" :close-on-click-modal='false' style="width:1000px;">
+        <el-dialog title="编辑合法登录IP" :visible.sync="dialogFormVisible22" :close-on-click-modal='false' style='width:80%;margin:0px auto 50px;'>
           <el-form :model="addform2" status-icon label-width="192px">
             <el-form-item label="输入要添加的合法登录IP：" prop="IP" class="red-star1" style="margin-bottom:8px;">
               <el-input type="IP" v-model="editTableRow2.legalip" disabled auto-complete="off"  style="width:250px;margin-left:-10px" ></el-input>
@@ -388,7 +413,7 @@
             <el-button class="f_btn f_btn_r"  @click="setLegalConfigServer('2',editTableRow2.legalconfigid)">确 定</el-button>
           </div>
         </el-dialog>
-        <el-dialog title="添加合法登录时间" :visible.sync="dialogFormVisible3" :close-on-click-modal='false' style="width:1000px;">
+        <el-dialog title="添加合法登录时间" :visible.sync="dialogFormVisible3" :close-on-click-modal='false' style='width:80%;margin:0px auto 50px;'>
           <el-form :model="addform3">
             <span style="color:red;"> * &nbsp;</span><span style="display:inline-block;">输入要添加的合法登录时间：</span>
             <div class="dialogloginArea3" style="display:inline-block;width:220px;">
@@ -438,7 +463,7 @@
             <el-button class="f_btn f_btn_r" @click="addExceptionAddLegalTime()">确 定</el-button>
           </div>
         </el-dialog>
-        <el-dialog title="编辑合法登录时间" :visible.sync="dialogFormVisible33" :close-on-click-modal='false' style="width:1000px;">
+        <el-dialog title="编辑合法登录时间" :visible.sync="dialogFormVisible33" :close-on-click-modal='false' style='width:80%;margin:0px auto 50px;'>
           <el-form :model="addform3">
             <!-- {{editTableRow3}} -->
             <span style="color:red;"> * &nbsp;</span><span style="display:inline-block;">输入要添加的合法登录时间：</span>
@@ -490,7 +515,7 @@
             <el-button class="f_btn f_btn_r" @click="setLegalConfigServer('3',editTableRow3.legalconfigid)">确 定</el-button>
           </div>
         </el-dialog>
-        <el-dialog title="添加合法登录账号" :visible.sync="dialogFormVisible4" :close-on-click-modal='false' style="width:1000px;">
+        <el-dialog title="添加合法登录账号" :visible.sync="dialogFormVisible4" :close-on-click-modal='false' style='width:80%;margin:0px auto 50px;'>
           <el-form :model="addform4">
             <span style="color:red;"> * &nbsp;</span><span style="display:inline-block;margin-bottom:10px;">输入要添加的合法登录账号：</span>
             <el-input v-model="addform4.name4" auto-complete="off" style="width:220px;height:30px;margin-left:15px;" placeholder=""></el-input><br>
@@ -526,7 +551,7 @@
           </div>
         </el-dialog>
 
-        <el-dialog title="编辑合法登录账号" :visible.sync="dialogFormVisible44" :close-on-click-modal='false' style="width:1000px;">
+        <el-dialog title="编辑合法登录账号" :visible.sync="dialogFormVisible44" :close-on-click-modal='false' style='width:80%;margin:0px auto 50px;'>
           <!-- {{editTableRow4}} -->
           <el-form :model="addform4">
             <span style="color:red;"> * &nbsp;</span><span style="display:inline-block;margin-bottom:10px;">输入要添加的合法登录账号：</span>
@@ -569,7 +594,7 @@
           </div>
         </el-dialog>
         <!-- 删除 -->
-        <el-dialog title="" :visible.sync="centerDialogVisible" :close-on-click-modal='false' style="width:1000px;">
+        <el-dialog title="" :visible.sync="centerDialogVisible" :close-on-click-modal='false' style='width:80%;margin:0px auto 50px;'>
           <div class="top" style="width:100%;">
               <svg-icon icon-class="warn" style="display:block;margin:0 auto;font-size:50px;color:#f9cd76"></svg-icon>
           </div>
@@ -585,7 +610,7 @@
     </div>
 </template>
 <script>
-import { loginSecuritySettings } from "@/api/safety";
+import { loginSecuritySettings, IPcity} from "@/api/safety";
 import moment from "moment";
 import {
   exceptionGetAreas,
@@ -607,7 +632,10 @@ import i18n from "@/lang";
 export default {
   data() {
     var checkIP = (rule, value, callback) => {
-      console.log(2222222, value);
+      // console.log(2222222, value);
+      if(value != returnCitySN["cip"]){
+        callback(this.descrip = '');
+      }
       // value = value.replace(/(^\s*)|(\s*$)/g, '');//去除空格;
       var patt = /^((25[0-5]|2[0-4]\d|[01]?\d\d?)($|(?!\.$)\.)){4}$/;
       if (!value) {
@@ -622,6 +650,11 @@ export default {
       }, 1000);
     };
     return {
+      descrip: '(本机公网IP)',
+      pageCount1: 0,
+      pageCount2: 0,
+      pageCount3: 0,
+      pageCount4: 0,
       rules2: {
         IP: [{ validator: checkIP, trigger: "change" }]
       },
@@ -787,6 +820,12 @@ export default {
 
     //图15-异常登录.png 标记为已处理
     // this.getremoteUpdateExceptionStatus();
+  },
+  mounted() {
+    const s = document.createElement('script');
+    s.type = 'text/javascript';
+    s.src = 'http://pv.sohu.com/cityjson?ie=utf-8';
+    document.body.appendChild(s);
   },
   methods: {
     // 编辑-------表1
@@ -1090,6 +1129,21 @@ export default {
       };
       this.getProvinceByCountryId();
       this.getExceptionRegion();
+      //sll添加
+      let ipconfig = returnCitySN["cip"];
+      let ser = "getAddressByIP";
+      let paramsData = "<ip>" + ipconfig + "</ip>";
+  
+      IPcity(ser,paramsData)
+        .then(res => {
+          console.log("获取IP地址所在城市信息数据成功", res);
+          console.log(res.province,5555555555)
+          this.addform1.zone2 = res.province;
+          this.addform1.zone3 = res.city;
+        })
+        .catch(err => {
+          console.log("获取IP地址所在城市信息数据失败", err);
+        });
     },
     addEvent2() {
       this.dialogFormVisible2 = true;
@@ -1099,6 +1153,9 @@ export default {
         serve: ""
       };
       this.getExceptionRegion();
+      console.log(returnCitySN["cip"]+','+returnCitySN["cname"]);
+      this.addform2.IP = returnCitySN["cip"];
+
       //图17-弹出框-添加合法登录IP.png
       // this.addExceptionAddLegalIP();
     },
@@ -1337,12 +1394,24 @@ export default {
             message: res
           });
           if (deteleTableUpdate == 1) {
+            if(this.currentPage1 == this.pageCount1 && this.currentPage1>1 && this.tableData1.agentAreaList.length==1){
+              this.currentPage1--
+            }
             this.getExceptionGetAreas();
           } else if (deteleTableUpdate == 2) {
+            if(this.currentPage2 == this.pageCount2 && this.currentPage2>1 && this.tableData2.agentIPList.length==1){
+              this.currentPage2--
+            }
             this.getExceptionGetIP();
           } else if (deteleTableUpdate == 3) {
+            if(this.currentPage3 == this.pageCount3 && this.currentPage3>1 && this.tableData3.agentTimeList.length==1){
+              this.currentPage3--
+            }
             this.getExceptionGetTime();
           } else {
+            if(this.currentPage4 == this.pageCount4 && this.currentPage4>1 && this.tableData4.agentUserList.length==1){
+              this.currentPage4--
+            }
             this.getExceptionGetUser();
           }
         })
@@ -1568,6 +1637,7 @@ export default {
           console.log("getLegalAreaList获取异常登录地数据成功", res);
           this.tableData1 = res;
           this.totalNum1 = res.totalElements;
+          this.pageCount1 = res.totalPage
           this.loading1 = false;
         })
         .catch(err => {
@@ -1590,6 +1660,7 @@ export default {
           console.log("getLegalIPList获取登录IP数据成功", res);
           this.tableData2 = res;
           this.totalNum2 = res.totalElements;
+          this.pageCount2= res.totalPage
           this.loading2 = false;
         })
         .catch(err => {
@@ -1612,6 +1683,7 @@ export default {
           console.log("getExceptionGetTime获取登录时间数据成功", res);
           this.tableData3 = res;
           this.totalNum3 = res.totalElements;
+          this.pageCount3 = res.totalPage
           this.loading3 = false;
         })
         .catch(err => {
@@ -1634,6 +1706,7 @@ export default {
           console.log("getExceptionGetTime获取登录账户数据成功", res);
           this.tableData4 = res;
           this.totalNum4 = res.totalElements;
+          this.pageCount4 = res.totalPage
           this.loading4 = false;
         })
         .catch(err => {
@@ -1644,6 +1717,7 @@ export default {
     handleSizeChange1(val) {
       console.log(`每页 ${val} 条`);
       this.pageSize1 = val;
+      this.currentPage1 = 1;
       this.getExceptionGetAreas();
     },
     handleCurrentChange1(val) {
@@ -1655,6 +1729,7 @@ export default {
     handleSizeChange2(val) {
       console.log(`每页 ${val} 条`);
       this.pageSize2 = val;
+      this.currentPage2 = 1;
       this.getExceptionGetIP();
     },
     handleCurrentChange2(val) {
@@ -1663,27 +1738,30 @@ export default {
       this.getExceptionGetIP();
     },
     // 3
+    handleSizeChange3(val) {
+      console.log(`每页 ${val} 条`);
+      this.pageSize3 = val;
+      this.currentPage3 = 1;
+      this.getExceptionGetTime();
+    },
     handleCurrentChange3(val) {
       console.log(`当前页: ${val}`);
       this.currentPage3 = val;
       this.getExceptionGetTime();
     },
-    handleSizeChange3(val) {
-      console.log(`每页 ${val} 条`);
-      this.pageSize3 = val;
-      this.getExceptionGetTime();
-    },
+
     // 4
+    handleSizeChange4(val) {
+      console.log(`每页 ${val} 条`);
+      this.pageSize4 = val;
+      this.currentPage4 = 1;
+      this.getExceptionGetUser();
+    },
     handleCurrentChange4(val) {
       console.log(`当前页: ${val}`);
       this.currentPage4 = val;
       this.getExceptionGetUser();
     },
-    handleSizeChange4(val) {
-      console.log(`每页 ${val} 条`);
-      this.pageSize4 = val;
-      this.getExceptionGetUser();
-    }
   }
 };
 </script>
@@ -1742,7 +1820,7 @@ export default {
       width: 60px;
       height: 35px;
       background: #56d6c4;
-      border-color: #3ac0f1;
+      border-color: #ffffff;
       color: #ffffff;
       font-size: 12px;
       margin-right: 20px;
@@ -1926,5 +2004,14 @@ export default {
 .el-range-editor.el-input__inner {
     padding-top: 0px;
     width: 220px;
+}
+.f_btn {
+  border-radius : 0px;
+}
+.f_btn_r{
+  color: #fff;
+}
+.f_btn_r:hover{
+  color: #fff;
 }
 </style>

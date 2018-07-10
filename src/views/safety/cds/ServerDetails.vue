@@ -3,10 +3,10 @@
     <div class="top">
       <el-row>
           <el-col :span="24">
-            <div class="left">
+            <div class="left mb10">
               <p class="node_name bold-wei">{{name}} <span> 详情 </span></p>
-              <span v-for="(area,index) in areas" class="head-content" :key=index>
-                {{area.name}} : {{area.uuid}}
+              <span v-for="(area,index) in areas" class="head-content" :key="index">
+                {{area.name}} : {{ area.uuid}}
               </span>
             </div>
           </el-col>
@@ -28,7 +28,7 @@
         <div class="content-list-1">
           <el-tabs v-model="activeName" @tab-click="handleClick">
             <el-tab-pane label="监听端口" name="first" >
-              <div class="server-table-content" >
+              <div class="server-table-content" style="border-top:none" >
                 <div class="server-table-f">
                   <div class="server-date">
                     <el-row>
@@ -37,13 +37,12 @@
                           <p>数据最后获取时间：<span>
                             {{ecmListDataTime || '无'}}
                             </span>
-                            <!-- <span class="reget-t" v-on:click="getCatchPort">重新获取</span> -->
                           </p>
                         </div>
                       </el-col>
                       <el-col :span="9">
                         <el-input placeholder="端口号" v-model="input1" class="input-with-select" size="small" style="width:350px">
-                          <el-button slot="append" icon="el-icon-search" v-on:click="getCatchPort"></el-button>
+                          <el-button slot="append" icon="el-icon-search" v-on:click="getCatchPortSearch"></el-button>
                         </el-input>
                       </el-col>
                     </el-row>
@@ -79,7 +78,7 @@
                       @size-change="handleSizeChange"
                       @current-change="handleCurrentChange"
                       :current-page="currentPage"
-                      :page-size="10"
+                      :page-size="pageSize"
                       layout="total, sizes, prev, pager, next, jumper"
                       :total="totalPageCP">
                     </el-pagination>
@@ -96,114 +95,120 @@
             <el-tab-pane label="运行进程" name="second">
               <div class="server-table-content">
                 <div class="server-table-f">
-                <div class="server-date">
-                  <el-row>
-                    <el-col :span="15">
-                      <div class="table-left">
-                        <p>数据最后获取时间：
-                          {{ecmListDataTime1 || '无'}}
-                          <!-- <span class="reget-t" v-on:click="getRunProcess">重新获取</span> -->
-                        </p>
-                      </div>
-                    </el-col>
-                    <el-col :span="9">
-                      <el-input placeholder="进程名称" v-model="input2" class="input-with-select" size="small" style="width:350px">
-                        <el-button slot="append" icon="el-icon-search" v-on:click="getRunProcess">
-                        </el-button>
-                      </el-input>
-                    </el-col>
-                  </el-row>
-                </div>
-                <div>
-                  <el-table
-                          :show-overflow-tooltip="true"
-                          :data="ecmListData1"
-                          style="width: 100%">
-                    <el-table-column
-                            prop="process_name"
-                            label="进程名">
-                    </el-table-column>
-                    <el-table-column
-                            prop="process_path"
-                            label="进程路径"
-                           >
-                    </el-table-column>
-                    <el-table-column
-                            prop="init_parameters"
-                            label="启动参数"
-                    >
-                    </el-table-column>
-                    <el-table-column
-                            prop="init_time"
-                            label="启动时间"
-                            width="200"
-                           >
-                    </el-table-column>
-                    <el-table-column
-                            prop="user"
-                            label="运行用户"
-                           >
-                    </el-table-column>
-                    <el-table-column
-                            prop="PID"
-                            label="PID"
-                           >
-                    </el-table-column>
-                    <el-table-column
-                            prop="ppname"
-                            label="父进程"
-                           >
-                    </el-table-column>
-                    <el-table-column
-                            prop="file_md5"
-                            label="文件MDS"
-                           >
-                    </el-table-column>
-                  </el-table>
-                  <div class="pagination">
-                    <el-pagination
-                      v-if="totalPageRP>10"
-                      @size-change="handleSizeChange1"
-                      @current-change="handleCurrentChange1"
-                      :current-page="currentPage"
-                      :page-size="10"
-                      layout="total, sizes, prev, pager, next, jumper"
-                      :total="totalPageRP">
-                    </el-pagination>
-                    <el-pagination
-                      v-else
-                      layout="">
-                    </el-pagination>
+                  <div class="server-date">
+                    <el-row>
+                      <el-col :span="15">
+                        <div class="table-left">
+                          <p>数据最后获取时间：<span>
+                            {{ecmListDataTime1 || '无'}}
+                            </span>
+                          </p>
+                        </div>
+                      </el-col>
+                      <el-col :span="9">
+                        <el-input placeholder="进程名" v-model="input2" class="input-with-select" size="small" style="width:350px">
+                          <el-button slot="append" icon="el-icon-search" v-on:click="getRunProcessSearch"></el-button>
+                        </el-input>
+                      </el-col>
+                    </el-row>
                   </div>
+                <div>
+                <el-table
+                        :show-overflow-tooltip="true"
+                        :data="ecmListData1"
+                        style="width: 100%">
+                  <el-table-column
+                          prop="process_name"
+                          :show-overflow-tooltip="true"
+                          label="进程名">
+                  </el-table-column>
+                  <el-table-column
+                          :show-overflow-tooltip="true"
+                          prop="process_path"
+                          label="进程路径"
+                          >
+                    <template slot-scope="scope">
+                      {{scope.row.process_path.length == 0 ? '--' : scope.row.process_path}}
+                    </template>
+                  </el-table-column>
+                  <el-table-column
+                          :show-overflow-tooltip="true"
+                          prop="init_parameters"
+                          label="启动参数"
+                  >
+                    <template slot-scope="scope">
+                      {{scope.row.init_parameters.length == 0 ? '--' : scope.row.init_parameters}}
+                    </template>
+                  </el-table-column>
+                  <el-table-column
+                          prop="init_time"
+                          label="启动时间"
+                          width="200"
+                          >
+                  </el-table-column>
+                  <el-table-column
+                          prop="user"
+                          label="运行用户"
+                          >
+                  </el-table-column>
+                  <el-table-column
+                          prop="PID"
+                          label="PID"
+                          >
+                  </el-table-column>
+                  <el-table-column
+                          prop="ppname"
+                          label="父进程"
+                          >
+                  </el-table-column>
+                  // <el-table-column
+                  //         prop="file_md5"
+                  //         label="文件MDS"
+                  //         >
+                  // </el-table-column>
+                </el-table>
+                <div class="pagination">
+                  <el-pagination
+                    v-if="totalPageRP>10"
+                    @size-change="handleSizeChange1"
+                    @current-change="handleCurrentChange1"
+                    :current-page="currentPage1"
+                    :page-size="pageSize1"
+                    layout="total, sizes, prev, pager, next, jumper"
+                    :total="totalPageRP">
+                  </el-pagination>
+                  <el-pagination
+                    v-else
+                    layout="">
+                  </el-pagination>
                 </div>
+              </div>
 
-              </div>
-              </div>
+            </div>
+            </div>
 
             </el-tab-pane>
             <el-tab-pane label="账号信息" name="third">
               <div class="server-table-content">
                 <div class="server-table-f">
-                <div class="server-date">
-                  <el-row>
-                    <el-col :span="15">
-                      <div class="table-left">
-                        <p>数据最后获取时间：
-                          {{ecmListDataTime2 || '无'}}
-                          <!-- <span class="reget-t" v-on:click="getUserMsg">重新获取</span> -->
-                        </p>
-                      </div>
-
-                    </el-col>
-                    <el-col :span="9">
-                      <el-input placeholder="用户名" v-model="input3" class="input-with-select" size="small" style="width:350px">
-                        <el-button slot="append" icon="el-icon-search" v-on:click="getUserMsg">
-                        </el-button>
-                      </el-input>
-                    </el-col>
-                  </el-row>
-                </div>
-                <div>
+                    <div class="server-date">
+                      <el-row>
+                        <el-col :span="15">
+                          <div class="table-left">
+                            <p>数据最后获取时间：<span>
+                              {{ecmListDataTime2 || '无'}}
+                              </span>
+                            </p>
+                          </div>
+                        </el-col>
+                        <el-col :span="9">
+                          <el-input placeholder="用户名" v-model="input3" class="input-with-select" size="small" style="width:350px">
+                            <el-button slot="append" icon="el-icon-search" v-on:click="getUserMsgSearch"></el-button>
+                          </el-input>
+                        </el-col>
+                      </el-row>
+                    </div>
+                  <div>
                   <el-table
                           :show-overflow-tooltip="true"
                           :data="ecmListData2"
@@ -224,12 +229,18 @@
                     </el-table-column>
                     <el-table-column
                             prop="lastLoginTime"
-                            label="上次登录"
-                            width="350"
+                            label="上次登录时间"
                            >
                            <template slot-scope="scope">
-                            <span style="width: 190px">时间：{{scope.row.lastLoginTime}}</span>
-                               来源：{{scope.row.sourceip}}
+                            {{scope.row.lastLoginTime.length < 10 ? '--' : scope.row.lastLoginTime}}
+                          </template>
+                    </el-table-column>
+                    <el-table-column
+                            prop="lastLoginsourceipTime"
+                            label="上次登录IP"
+                           >
+                           <template slot-scope="scope">
+                            <span>{{scope.row.sourceip.length < 5 ? '--' : scope.row.sourceip}}</span>
                           </template>
                     </el-table-column>
 
@@ -239,8 +250,8 @@
                       v-if="totalPageUM>10"
                       @size-change="handleSizeChange2"
                       @current-change="handleCurrentChange2"
-                      :current-page="currentPage"
-                      :page-size="10"
+                      :current-page="currentPage2"
+                      :page-size="pageSize2"
                       layout="total, sizes, prev, pager, next, jumper"
                       :total="totalPageUM">
                     </el-pagination>
@@ -272,7 +283,7 @@
                     </el-col>
                     <el-col :span="9">
                       <el-input placeholder="软件名称" v-model="input4" class="input-with-select" size="small" style="width:350px">
-                        <el-button slot="append" icon="el-icon-search" v-on:click="getSoftManagement">
+                        <el-button slot="append" icon="el-icon-search" v-on:click="getSoftManagementSearch">
                         </el-button>
                       </el-input>
                     </el-col>
@@ -293,15 +304,15 @@
                            >
                     </el-table-column>
                     <el-table-column
-                            prop="LogDate"
+                            prop="update_time"
                             label="软件最后更新时间"
                     >
                     </el-table-column>
-                    <el-table-column
-                            prop="softdirect"
-                            label="软件安装目录"
-                           >
-                    </el-table-column>
+                    // <el-table-column
+                    //         prop="softdirect"
+                    //         label="软件安装目录"
+                    //        >
+                    // </el-table-column>
                   </el-table>
                   <div class="pagination">
                     <el-pagination
@@ -309,7 +320,7 @@
                       @size-change="handleSizeChangeSoft"
                       @current-change="handleCurrentChangeSoft"
                       :current-page="currentPageSoft"
-                      :page-size="10"
+                      :page-size="pageSizeSoft"
                       layout="total, sizes, prev, pager, next, jumper"
                       :total="totalPageSM">
                     </el-pagination>
@@ -340,7 +351,7 @@
                     <el-row>
                       <el-col :span="24">
                         <div class="table-left">
-                          <p class="marked-pro" type="plain" @click="markDispose">
+                          <p class="marked-pro" :class="{'changeColor':isChangeColor,'ownColor':!isChangeColor}" type="plain" @click="markDispose">
                             标记为已处理
                           </p>
                         </div>
@@ -422,8 +433,8 @@
                         v-if="totalPageLE1>10"
                         @size-change="handleSizeChange3"
                         @current-change="handleCurrentChange3"
-                        :current-page="currentPage"
-                        :page-size="pageSize"
+                        :current-page="currentPage3"
+                        :page-size="pageSize3"
                         layout="total, sizes, prev, pager, next, jumper"
                         :total="totalPageLE1">
                       </el-pagination>
@@ -436,13 +447,14 @@
                 </div>
               </div>
             </el-tab-pane>
-            <el-tab-pane label="爆破登陆" name="second"><div class="server-table-content">
+            <el-tab-pane label="爆破登陆" name="second">
+              <div class="server-table-content">
                 <div class="server-table-f server-table-f-1">
                   <div class="server-date">
                     <el-row>
                       <el-col :span="24">
                         <div class="table-left">
-                          <p class="marked-pro" @click="markDispose">
+                          <p class="marked-pro" :class="{'changeColor':isChangeColor1,'ownColor':!isChangeColor1}"  @click="markDispose">
                             标记为已处理
                           </p>
                         </div>
@@ -456,65 +468,76 @@
                             :data="ecmListData7"
                             @filter-change="errorFilterChange"
                             style="width: 100%"
-                            @selection-change="handleSelectionChange">
+                            @selection-change="handleSelectionChange1">
                       <el-table-column
                               type="selection"
                               width="50">
                       </el-table-column>
                       <el-table-column
-                              prop="cserver"
+                              prop="agent_ip"
                               label="云服务器"
                               width="180">
                       </el-table-column>
                       <el-table-column
-                              prop="logintime"
+                              prop="logindate"
                               width="180"
                               label="登录时间"
                              >
                       </el-table-column>
                       <el-table-column
-                              :show-overflow-tooltip="true"
                               prop="status"
                               label="状态"
                               width="80"
-                              :filters="[{ text: '未处理', value: '未处理' }, { text: '已处理', value: '已处理' }]"
+                              :filters="[{ text: '未处理', value: '0' }, { text: '已处理', value: '1' }]"
                               column-key = 'filter2'
-                              :filter-multiple="false"
+                              :filter-multiple="true"
                       >
+                      <template slot-scope="scope">
+                        {{scope.row.status == 0 ?　"未处理" : "已处理"}}
+                      </template>
                       </el-table-column>
                       <el-table-column
-                              prop="username"
+                              prop="loginuser"
                               label="对应用户名"
                              >
                       </el-table-column>
                       <el-table-column
-                              prop="type"
+                              prop="logintype"
                               label="登录类型"
                               >
                       </el-table-column>
                       <el-table-column
-                              prop="loginip"
+                              prop="sourceip"
                               label="登录源IP"
                               width="200"
                               >
                       </el-table-column>
-                      <el-table-column
-                              prop="typewarn"
-                              label="告警类型"
-                              width="140"
-                              :filters="[{text: '异地登录', value: '异地登录'}, {text: '爆破登录', value: '爆破登录'}, {text: '非法IP登录', value: '非法IP登录'}, {text: '非法账号登录', value: '非法账号登录'}, {text: '非法时间登录', value: '非法时间登录'}]"
-                              :filter-multiple="false"
-                      >
-                      </el-table-column>
+                      
                       <el-table-column
                               prop="operation"
                               label="操作"
                               >
                         <template slot-scope="scope">
-                          <el-button type="text" size="small" v-on:click="getModel(scope.row.sshexceptioneventid)">标记为已处理</el-button>
+                          <el-button type="text" size="small" v-on:click="getModel(scope.row.sshexceptioneventid)"
+                          :disabled="scope.row.status == 1">标记为已处理</el-button>
                         </template>
                       </el-table-column>
                     </el-table>
+                    <div class="pagination">
+                      <el-pagination
+                        v-if="totalPageLE1>10"
+                        @size-change="handleSizeChange8"
+                        @current-change="handleCurrentChange8"
+                        :current-page="currentPage7"
+                        :page-size="pageSize7"
+                        layout="total, sizes, prev, pager, next, jumper"
+                        :total="totalPageLE1">
+                      </el-pagination>
+                      <el-pagination
+                        v-else
+                        layout="">
+                      </el-pagination>
+                    </div>
                   </div>
                 </div>
               </div></el-tab-pane>
@@ -524,7 +547,7 @@
                     <el-row>
                       <el-col :span="24">
                         <div class="table-left">
-                          <p class="marked-pro" @click="markDispose">
+                          <p class="marked-pro" :class="{'changeColor':isChangeColor2,'ownColor':!isChangeColor2}" @click="markDispose">
                             标记为已处理
                           </p>
                         </div>
@@ -538,7 +561,7 @@
                             :data="ecmListData4"
                             @filter-change="errorFilterChange"
                             style="width: 100%"
-                            @selection-change="handleSelectionChange">
+                            @selection-change="handleSelectionChange2">
                       <el-table-column
                               type="selection"
                               width="50">
@@ -604,8 +627,8 @@
                         v-if="totalPageLE2>10"
                         @size-change="handleSizeChange4"
                         @current-change="handleCurrentChange4"
-                        :current-page="currentPage"
-                        :page-size="10"
+                        :current-page="currentPage4"
+                        :page-size="pageSize4"
                         layout="total, sizes, prev, pager, next, jumper"
                         :total="totalPageLE2">
                       </el-pagination>
@@ -625,7 +648,7 @@
                     <el-row>
                       <el-col :span="24">
                         <div class="table-left">
-                          <p class="marked-pro" @click="markDispose">
+                          <p class="marked-pro" :class="{'changeColor':isChangeColor3,'ownColor':!isChangeColor3}" @click="markDispose">
                             标记为已处理
                           </p>
                         </div>
@@ -639,7 +662,7 @@
                             :data="ecmListData5"
                             @filter-change="errorFilterChange"
                             style="width: 100%"
-                            @selection-change="handleSelectionChange">
+                            @selection-change="handleSelectionChange3">
                       <el-table-column
                               type="selection"
                               width="50">
@@ -705,8 +728,8 @@
                         v-if="totalPageLE3>10"
                         @size-change="handleSizeChange5"
                         @current-change="handleCurrentChange5"
-                        :current-page="currentPage"
-                        :page-size="10"
+                        :current-page="currentPage5"
+                        :page-size="pageSize5"
                         layout="total, sizes, prev, pager, next, jumper"
                         :total="totalPageLE3">
                       </el-pagination>
@@ -725,7 +748,7 @@
                     <el-row>
                       <el-col :span="24">
                         <div class="table-left">
-                          <p class="marked-pro" v-on:click="markDispose">
+                          <p class="marked-pro" :class="{'changeColor':isChangeColor4,'ownColor':!isChangeColor4}" v-on:click="markDispose">
                             标记为已处理
                           </p>
                         </div>
@@ -738,7 +761,7 @@
                             :data="ecmListData6"
                             @filter-change="errorFilterChange"
                             style="width: 100%"
-                            @selection-change="handleSelectionChange">
+                            @selection-change="handleSelectionChange4">
                       <el-table-column
                               type="selection"
                               width="50">
@@ -804,8 +827,8 @@
                         v-if="totalPageLE4>10"
                         @size-change="handleSizeChange6"
                         @current-change="handleCurrentChange6"
-                        :current-page="currentPage"
-                        :page-size="10"
+                        :current-page="currentPage6"
+                        :page-size="pageSize6"
                         layout="total, sizes, prev, pager, next, jumper"
                         :total="totalPageLE4"
                         >
@@ -836,7 +859,7 @@
                     <el-row>
                       <el-col :span="24">
                         <div class="table-left">
-                          <p class="marked-pro" v-on:click="markDispose1">
+                          <p class="marked-pro" :class="{'changeColor':isChangeColor5,'ownColor':!isChangeColor5}" v-on:click="markDispose1">
                             标记为已处理
                           </p>
                         </div>
@@ -850,7 +873,7 @@
                             :data="integrityData"
                             @filter-change="itegrityFilterChange"
                             style="width: 100%"
-                            @selection-change="handleSelectionChange">
+                            @selection-change="handleSelectionChangeInteri">
                       <el-table-column
                               type="selection"
                               width="50">
@@ -865,8 +888,8 @@
                              >
                         <template slot-scope="scope">
                           <el-tooltip placement="bottom" class="item" effect="dark">
-                            <div slot="content">{{scope.row.Name}}</div>
-                            <div class="itegrityStyle">{{scope.row.Name}}</div>
+                            <div slot="content">{{scope.row.name}}</div>
+                            <div class="itegrityStyle">{{scope.row.name}}</div>
                           </el-tooltip>
                         </template>
                       </el-table-column>
@@ -888,8 +911,8 @@
                              >
                         <template slot-scope="scope">
                           <el-tooltip placement="bottom" class="item" effect="dark">
-                            <div slot="content">{{scope.row.Path}}</div>
-                            <div class="itegrityStyle">{{scope.row.Path}}</div>
+                            <div slot="content">{{scope.row.path}}</div>
+                            <div class="itegrityStyle">{{scope.row.path}}</div>
                           </el-tooltip>
                         </template>
                       </el-table-column>
@@ -897,10 +920,8 @@
                               prop="checkTime"
                               label="检测周期"
                               >
-
                       </el-table-column>
                       <el-table-column
-                              prop="Severity"
                               width="100"
                               label="严重级别"
                               :filters="[{ text: '严重', value: '7' }]"
@@ -908,7 +929,7 @@
                               :filter-multiple="true"
                               >
                         <template slot-scope="scope">
-                          {{scope.row.Severity == 7 ? "严重" : ""}}
+                          {{scope.row.severity == 7 ? "严重" : ""}}
                         </template>
                       </el-table-column>
                       <el-table-column
@@ -937,7 +958,7 @@
                             v-on:click="getModel1(scope.row.IntegrityEventID)"
                             type="text"
                             size="small"
-                            :disabled="scope.row.Status == 0">标记为已处理
+                            :disabled="scope.row.status == 0">标记为已处理
                           </el-button>
                         </template>
                       </el-table-column>
@@ -947,8 +968,8 @@
                         v-if="totalPageIE>10"
                         @size-change="handleSizeChange7"
                         @current-change="handleCurrentChange7"
-                        :current-page="currentPage"
-                        :page-size="10"
+                        :current-page="currentPage8"
+                        :page-size="pageSize8"
                         layout="total, sizes, prev, pager, next, jumper"
                         :total="totalPageIE"
                         >
@@ -969,8 +990,15 @@
       <el-dialog style='width:80%;margin:0px auto 50px;'
         title="选择应用的云服务器"
         :visible.sync="dialogUpdateVisiblePose">
-        <p
-          style="text-align:center;display:block;margin:40px auto;">是否确定标记为已处理</p>
+        <div style="width:100%;display:inline-block;position: relative">
+          <i>
+            <svg-icon icon-class="warn" style="font-size:50px;margin-left: 30%;color:#f9cd76;"></svg-icon>
+          </i>
+          <p
+          style="text-align:center;display:inline-block;auto;position: absolute;top:15px;margin-left:10px">是否确定标记为已处理</p>
+        </div>
+
+        
         <div slot="footer" class="dialog-footer">
           <el-button
             @click="dialogUpdateVisiblePose = false"
@@ -1025,6 +1053,12 @@
         input5: '',
         select: '',
         markPose: '',
+        isChangeColor:false,
+        isChangeColor1:false,
+        isChangeColor2:false,
+        isChangeColor3:false,
+        isChangeColor4:false,
+        isChangeColor5:false,
         detailsType: '',
         agentGuid: '',
         hostId: 267,
@@ -1045,6 +1079,7 @@
         pageSize5: 10,
         pageSize6: 10,
         pageSize7: 10,
+        pageSize8: 10,
         pageSizeSoft: 10,
         totalPageCP: 1,
         totalPageRP: 1,
@@ -1058,11 +1093,13 @@
         currentPage5: 1,
         currentPage6: 1,
         currentPage7: 1,
+        currentPage8: 1,
         currentPageSoft: 1,
         totalPageLE1: 1,
         totalPageLE2: 1,
         totalPageLE3: 1,
         totalPageLE4 : 1,
+        totalPageLE5 : 1,
         totalPageIE : 1,
         exception_status:'0,1',
         dialogUpdateVisiblePose: false,
@@ -1094,7 +1131,7 @@
           },
           {
             name: '防护状态',
-            uuid: '在线'
+            uuid: ''
           },
         ],
         Pagination:{
@@ -1129,14 +1166,22 @@
       this.getSoftManagement();
       this.getAgentDetails();
       this.judgeType();
-      window.onbeforeunload=function (e){
-        e = e || window.event
-        if(e.clientX>document.body.clientWidth && e.clientY < 0 || e.altKey){
-            sessionStorage.removeItem('templateType');
-        }else{
-            console.log("你正在刷新页面");
-
-        }
+      //监听触发操作
+      function hashChange(){
+        
+      }
+      function hashChange1(){
+        alert('2132')
+        sessionStorage.removeItem('templateType')
+      }
+      
+      //url变化监听器
+      if( ('onhashchange' in window) && ((typeof document.documentMode==='undefined') || document.documentMode==8)) {
+          // 浏览器支持onhashchange事件
+          window.onhashchange = hashChange();  // TODO，对应新的hash执行的操作函数
+      } else {
+        console.log(123123)
+          window.onhashchange = hashChange1()
       }
     },
 
@@ -1146,22 +1191,25 @@
           // 筛选状态
           if(value.filter1.length>0){
             this.exception_status = value.filter1.join(',')
+            this.currentPage3 = 1;
           }else{
             this.exception_status = '1,0'
           }
           this.getLogExceptionRegion()
         }else if(value.filter2){
-          console.log(value.filter2)
           // 筛选状态
           if(value.filter2.length>0){
             this.exception_status = value.filter2.join(',')
+            this.currentPage7 = 1;
           }else{
             this.exception_status = '1,0'
           }
+          this.getLogExceptionBlasting();
         }else if(value.filter3){
           // 筛选状态
           if(value.filter3.length>0){
-            this.exception_status = value.filter3.join(',')
+            this.exception_status = value.filter3.join(',');
+            this.currentPage4 = 1;
           }else{
             this.exception_status = '1,0'
           }
@@ -1169,7 +1217,8 @@
         }else if(value.filter4){
           // 筛选状态
           if(value.filter4.length>0){
-            this.exception_status = value.filter4.join(',')
+            this.exception_status = value.filter4.join(',');
+            this.currentPage5 = 1;
           }else{
             this.exception_status = '1,0'
           }
@@ -1177,7 +1226,8 @@
         }else if(value.filter5){
           // 筛选状态
           if(value.filter5.length>0){
-            this.exception_status = value.filter5.join(',')
+            this.exception_status = value.filter5.join(',');
+            this.currentPage6 = 1;
           }else{
             this.exception_status = '1,0'
           }
@@ -1188,7 +1238,8 @@
         if(value.filter1){
           // 筛选状态
           if(value.filter1.length>0){
-            this.exception_status = value.filter1.join(',')
+            this.exception_status = value.filter1.join(',');
+            this.currentPage8 = 1;
           }else{
             this.exception_status = '1,0'
           }
@@ -1202,10 +1253,12 @@
         return row.Severity == value;
       },
       judgeType(){
-        this.detailsType = window.location.href.substring(window.location.href.length-1);
-        let aa = this.detailsType === "1" ? "default" : this.detailsType === "2" ? "custom" : "check";
-        this.template_type = aa;
+        this.detailsType = window.location.href.substring(window.location.href.length-2);
+        let aa = this.detailsType === "/1" ? "default" : this.detailsType === "12" ? "default" : this.detailsType === "/2" ? "custom" : "check",
+            bb = this.detailsType === "12" ? 'second' : 'first';
         this.getTemplateType()
+        this.template_type = aa;
+        this.activeName = bb;
 
       },
       getTemplateType(){
@@ -1216,7 +1269,24 @@
           this.template_type = tType;
         }
       },
+      getCatchPortSearch(){
+        this.currentPage = 1
+        this.getCatchPort()
+      },
+      getRunProcessSearch(){
+        this.currentPage1 = 1
+        this.getRunProcess()
+      },
+      getUserMsgSearch(){
+        this.currentPage2 = 1
+        this.getUserMsg()
+      },
+      getSoftManagementSearch(){
+        this.currentPageSoft = 1
+        this.getSoftManagement()
+      },
       handleSizeChange(val) {
+        this.currentPage = 1;
         this.pageSize = val
         this.getCatchPort()
       },
@@ -1225,6 +1295,7 @@
         this.getCatchPort()
       },
       handleSizeChange1(val) {
+        this.currentPage1 = 1;
         this.pageSize1 = val
         this.getRunProcess()
       },
@@ -1233,6 +1304,7 @@
         this.getRunProcess()
       },
       handleSizeChange2(val) {
+        this.currentPage2 = 1 ;
         this.pageSize2 = val
         this.getUserMsg()
       },
@@ -1242,45 +1314,59 @@
       },
       handleSizeChange3(val) {
         this.pageSize3 = val
-        this.getLogException()
+        this.getLogExceptionRegion()
       },
       handleCurrentChange3(val) {
         this.currentPage3 = val;
-        this.getLogException()
+        this.getLogExceptionRegion()
+      },
+      handleSizeChange8(val) {
+        this.currentPage7 = 1;
+        this.pageSize7 = val
+        this.getLogExceptionBlasting()
+      },
+      handleCurrentChange8(val) {
+        this.currentPage7 = val;
+        this.getLogExceptionBlasting()
       },
       handleSizeChange4(val) {
+        this.currentPage4 = 1;
         this.pageSize4 = val
-        this.getLogException()
+        this.getLogExceptionIp()
       },
       handleCurrentChange4(val) {
         this.currentPage4 = val;
-        this.getLogException()
+        this.getLogExceptionIp()
       },
       handleSizeChange5(val) {
+        this.currentPage5 = 1;
         this.pageSize5 = val
-        this.getLogException()
+        this.getLogExceptionUser()
       },
       handleCurrentChange5(val) {
         this.currentPage5 = val;
-        this.getLogException()
+        this.getLogExceptionUser()
       },
       handleSizeChange6(val) {
+        this.currentPage6 = 1;
         this.pageSize6 = val
-        this.getLogException()
+        this.getLogExceptionTime()
       },
       handleCurrentChange6(val) {
         this.currentPage6 = val;
-        this.getLogException()
+        this.getLogExceptionTime()
       },
       handleSizeChange7(val) {
-        this.pageSize7 = val
+        this.currentPage8 = 1;
+        this.pageSize8 = val
         this.getIntegrityEventList()
       },
       handleCurrentChange7(val) {
-        this.currentPage7 = val;
+        this.currentPage8 = val;
         this.getIntegrityEventList()
       },
       handleSizeChangeSoft(val) {
+        this.currentPageSoft = 1
         this.pageSizeSoft = val
         this.getSoftManagement()
       },
@@ -1290,6 +1376,27 @@
       },
       handleSelectionChange(val){
         this.multipleSelection = val;
+        this.isChangeColor = val.length == 1 ? true : false;
+      },
+      handleSelectionChange1(val){
+        this.multipleSelection = val;
+        this.isChangeColor1 = val.length == 1 ? true : false;
+      },
+      handleSelectionChange2(val){
+        this.multipleSelection = val;
+        this.isChangeColor2 = val.length == 1 ? true : false;
+      },
+      handleSelectionChange3(val){
+        this.multipleSelection = val;
+        this.isChangeColor3 = val.length == 1 ? true : false;
+      },
+      handleSelectionChange4(val){
+        this.multipleSelection = val;
+        this.isChangeColor4 = val.length == 1 ? true : false;
+      },
+      handleSelectionChangeInteri(val){
+        this.multipleSelection = val;
+        this.isChangeColor5 = val.length == 1 ? true : false;
       },
       checkSelectable(row){
         return row.status == 0
@@ -1343,6 +1450,7 @@
       },
       //运行进程
       getRunProcess(){
+        console.log(this.currentPage1)
         let ser = 'getProcessNewEventByHostId',
             paramStr = '<hostId>'+ this.hostId +'</hostId>'+
                       '<processCondition>'+ this.input2 +'</processCondition>'+
@@ -1350,7 +1458,7 @@
         runProcess(ser,paramStr).then( res => {
           this.ecmListDataTime1 = res.newProcessList ? res.newProcessList[0].LogDate : '无数据';
           this.ecmListData1 = res.newProcessList;
-          this.totalPageRP = res.totalPage;
+          this.totalPageRP = res.totalElements;
         }).catch( err => {
           console.log('获取数据存储失败',err)
         })
@@ -1394,10 +1502,22 @@
           console.log('获取数据存储失败', err )
         })
       },
+      //异常登录-爆破登录
+      getLogExceptionBlasting(){
+          let ser = 'remoteGetExceptionEventList',
+          paramStr = '<paramStr>{"paramStr":{"currentPage":"'+ this.currentPage7 +'","pageSize":"'+ this.pageSize7 +'","zoneId":"'+ this.currentId +'","status":"'+ this.exception_status +'","warningtype":"5","host_id":"'+ this.hostId +'","queryParam":""}}</paramStr>';
+        logException(ser,paramStr).then( res => {
+          let ecmListData7 = res.eventList;
+          this.ecmListData7 = ecmListData7;
+          this.totalPageLE5 = res.totalElements;
+        }).catch( err => {
+          console.log('获取数据存储失败', err )
+        })
+      },
       //异常登录-非法ip登录
       getLogExceptionIp(){
           let ser = 'remoteGetExceptionEventList',
-          paramStr = '<paramStr>{"paramStr":{"currentPage":"'+ this.currentPage3 +'","pageSize":"'+ this.pageSize3 +'","zoneId":"'+ this.currentId +'","status":"'+ this.exception_status +'","warningtype":"1","host_id":"'+ this.hostId +'","queryParam":""}}</paramStr>';
+          paramStr = '<paramStr>{"paramStr":{"currentPage":"'+ this.currentPage4 +'","pageSize":"'+ this.pageSize4 +'","zoneId":"'+ this.currentId +'","status":"'+ this.exception_status +'","warningtype":"1","host_id":"'+ this.hostId +'","queryParam":""}}</paramStr>';
         logException(ser,paramStr).then( res => {
           let ecmListData4 = res.eventList;
           this.ecmListData4 = ecmListData4;
@@ -1409,7 +1529,7 @@
       //异常登录-非法账号登录
       getLogExceptionUser(){
           let ser = 'remoteGetExceptionEventList',
-          paramStr = '<paramStr>{"paramStr":{"currentPage":"'+ this.currentPage3 +'","pageSize":"'+ this.pageSize3 +'","zoneId":"'+ this.currentId +'","status":"'+ this.exception_status +'","warningtype":"3","host_id":"'+ this.hostId +'","queryParam":""}}</paramStr>';
+          paramStr = '<paramStr>{"paramStr":{"currentPage":"'+ this.currentPage5 +'","pageSize":"'+ this.pageSize5 +'","zoneId":"'+ this.currentId +'","status":"'+ this.exception_status +'","warningtype":"3","host_id":"'+ this.hostId +'","queryParam":""}}</paramStr>';
         logException(ser,paramStr).then( res => {
           let ecmListData5 = res.eventList;
           this.ecmListData5 = ecmListData5;
@@ -1421,7 +1541,7 @@
       //异常登录-非法时间登录
       getLogExceptionTime(){
           let ser = 'remoteGetExceptionEventList',
-          paramStr = '<paramStr>{"paramStr":{"currentPage":"'+ this.currentPage3 +'","pageSize":"'+ this.pageSize3 +'","zoneId":"'+ this.currentId +'","status":"'+ this.exception_status +'","warningtype":"2","host_id":"'+ this.hostId +'","queryParam":""}}</paramStr>';
+          paramStr = '<paramStr>{"paramStr":{"currentPage":"'+ this.currentPage6 +'","pageSize":"'+ this.pageSize6 +'","zoneId":"'+ this.currentId +'","status":"'+ this.exception_status +'","warningtype":"2","host_id":"'+ this.hostId +'","queryParam":""}}</paramStr>';
         logException(ser,paramStr).then( res => {
           let ecmListData6 = res.eventList;
           this.ecmListData6 = ecmListData6;
@@ -1432,10 +1552,11 @@
       },
       // 异常登录
       getLogException(){
-        // console.log(111)
         let ser = 'remoteGetExceptionEventList',
         //异地登录
             paramStr = '<paramStr>{"paramStr":{"currentPage":"'+ this.currentPage3 +'","pageSize":"'+ this.pageSize3 +'","zoneId":"'+ this.currentId +'","status":"0,1","warningtype":"4","host_id":"'+ this.hostId +'","queryParam":""}}</paramStr>',
+            // 爆破登录
+            paramStr4 = '<paramStr>{"paramStr":{"currentPage":"'+ this.currentPage7 +'","pageSize":"'+ this.pageSize7 +'","zoneId":"'+ this.currentId +'","status":"0,1","warningtype":"5","host_id":"'+ this.hostId +'","queryParam":""}}</paramStr>',
             //非法ip登录
             paramStr1 = '<paramStr>{"paramStr":{"currentPage":"'+ this.currentPage4 +'","pageSize":"'+ this.pageSize4 +'","zoneId":"'+ this.currentId +'","status":"0,1","warningtype":"1","host_id":"'+ this.hostId +'","queryParam":""}}</paramStr>',
             //非法账号登录
@@ -1446,6 +1567,14 @@
           let ecmListData3 = res.eventList;
           this.ecmListData3 = ecmListData3;
           this.totalPageLE1 = res.totalElements;
+        }).catch( err => {
+          console.log('获取数据存储失败', err )
+        })
+        // 爆破登录
+        logException(ser,paramStr4).then( res => {
+          let ecmListData7 = res.eventList;
+          this.ecmListData7 = ecmListData7;
+          this.totalPageLE5 = res.totalElements;
         }).catch( err => {
           console.log('获取数据存储失败', err )
         })
@@ -1477,11 +1606,11 @@
 
       //文件一致性检测
       getIntegrityEventList(){
-        let ser = 'getIntegrityEventListByHostId'
-        let paramsData = '<hostId>'+ this.hostId +'</hostId>'+
-                         '<page>'+ this.currentPage7 +'</page><onePageSize>'+ this.pageSize7 +'</onePageSize>';
+        let ser = 'remoteGetIntegrityEventHostList'
+        // let paramsData = '{"paramStr":{ "currentPage":"'+ this.currentPage7 +'","status":"0,1","severity":"7" ,"pageSize":"'+ this.pageSize7 +'","zoneId":"1","queryParam":"test","host_id":"'+ this.hostId +'" }}';
+        let paramsData = '<paramStr>{"paramStr":{"currentPage":"'+ this.currentPage8 +'","status":"0,1","severity":"7","pageSize":"'+ this.pageSize8 +'","host_id":"'+ this.hostId +'","queryParam":""}}</paramStr>';
         integrityEventList(ser,paramsData).then(res=>{
-          let itd = res.eventList;
+          let itd = res.hostList;
           this.integrityData = itd;
           this.totalPageIE = res.totalElements;
         }).catch( err => {
@@ -1626,7 +1755,7 @@
       .head-content{
         width:30%;
         display: inline-block;
-        line-height: 58px;
+        line-height: 30px;
       }
       .marked-pro{
         background: #f0f2f7;
@@ -1642,6 +1771,14 @@
           margin-left: -10px;
         }
       }
+        .changeColor{
+          background:#56d6c4;
+          color:#ffffff;
+        }
+        .ownColor{
+          background:#f0f2f7;
+          color:#606266
+        }
       .content-list{
         height: 35px;
         background: #f0f2f7;
@@ -1675,6 +1812,7 @@
       .server-table-content{
         overflow: hidden;
         background: #fff;
+        border-top: 1px solid #e8edf5;
         .server-table-f{
           margin:20px;
           margin-top: 0;
@@ -1691,16 +1829,10 @@
           border:none;
         }
       }
-
-      &:after{
-        content: '';
-        height: 0;
-        width: 0;
-        border: 8px solid #f6f8fb;
-        border-color: transparent transparent transparent #f6f8fb;
-        position: absolute;
-        bottom: -9px;
-        left: 0px;
+      .template_default{
+        .server-table-content{
+          border-top:none;
+        }
       }
       &:before{
         content: '';
@@ -1712,6 +1844,9 @@
         bottom: -9px;
         right: 0px;
       }
+      .mb10{
+        margin-bottom: 10px;
+      }
       .left{
         /*width: 65%;*/
         /*float: left;*/
@@ -1720,35 +1855,8 @@
         .node_name{
           font-size: 14px;
           color: #333333;
-          padding: 20px 0px;
+          padding: 20px 0px 10px 0;
         }
-
-      .areaButton{
-        display: block;
-        min-width: 68px;
-        height: 30px;
-        margin-bottom: 15px;
-        background: #f0f2f7;
-        float: left;
-        text-align: center;
-        line-height: 30px;
-        border-radius: 5px;
-        margin-right: 10px;
-        font-size: 11px;
-        cursor: pointer;
-        -webkit-user-select:none;
-          -moz-user-select:none;
-          -ms-user-select:none;
-          user-select:none;
-      }
-      .areaButton-bg{
-        background: #f9cd76;
-        color: #ffffff;
-      }
-      .areaButton:hover{
-        background: #f9cd76;
-        color: #ffffff;
-      }
     }
     .right{
         padding-top: 52px;
@@ -1765,27 +1873,46 @@
         }
       }
     }
+    .el-col-9 {
+      float: right;
+      margin-right: -23px;
     }
-    .line{
-        height: 10px;
-        width: 100%;
-        background: #f0f2f7;
-        background-size: 50% 100%;
-        background-repeat: no-repeat;
-      }
-      .pagination{
-        float:right;
-        margin: 20px;
-      }
+  }
+  .line{
+      height: 10px;
+      width: 100%;
+      background: #f0f2f7;
+      background-size: 50% 100%;
+      background-repeat: no-repeat;
     }
-    .itegrityStyle{
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
+    .pagination{
+      float:right;
+      margin: 20px;
     }
+  }
+  .itegrityStyle{
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .el-button{
+    border-radius:0;
+  }
 </style>
 <style lang="scss">
   .ecm_monitor{
+    .template_default{
+      .el-tabs__nav{
+        .el-tabs__item {
+          width:120px;
+          text-align:center;
+        }
+        .el-tabs__active-bar{
+          width:100px !important;
+        }
+      }
+    }
+    
    .el-dialog__header {
     background-color: #323c4e;
     height:40px;
@@ -1831,28 +1958,22 @@
 
   }
   .el-select .el-input {
-        width: 100px;
-      }
-      .input-with-select .el-input-group__prepend {
-        background-color: #fff;
-      }
+    width: 100px;
+  }
+  .input-with-select .el-input-group__prepend {
+    background-color: #fff;
+  }
   .el-table .el-table__body-wrapper tbody tr td{
     height:35px;
     padding: 2px 0;
 
   }
-  .el-table .el-table__header-wrapper thead tr th{
-    font-size: 14px;
-    height: 35px;
-      line-height: 35px;
-      color: #333;
-      padding: 0;
-      background-color: #f0f2f7;
-
-  }
   .el-radio-button__inner {
     background: transparent ;
     border: none;
+    &:nth-child(1){
+      border-left: 1px solid #fff;
+    }
   }
   .el-tabs__header {
       padding: 0;

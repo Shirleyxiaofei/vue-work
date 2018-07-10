@@ -32,26 +32,27 @@
         <el-col :span="15">
           <div class="content_top content_left">
             <el-button
-              class="node_name h_btn"
+              class="node_name"
+              :class="{'actived':isActive,'h_btn':!isActive}"
               type="info"
               @click="changeStatus()"
-              :plain="true">{{buttontextLeft}}</el-button>
+              :disabled="multipleSelection.length!=1"
+              :plain="false">{{buttontextLeft}}</el-button>
           </div>
         </el-col>
        
         <el-col :span="8">
-                      <el-input placeholder="服务器或IP名称" v-model="input5" class="input-with-select group" size="small" >
-                      
-                        <el-button slot="append" icon="el-icon-search" @click="getIntegrityEventHostList"></el-button>
-                      </el-input>
-                    </el-col>
+            <el-input placeholder="服务器或IP名称" v-model="input5" class="input-with-select group" size="small" @change="changeSearch" @keyup.native='showCheck'>
+              <el-button slot="append" icon="el-icon-search" @click="getIntegrityEventHostList"></el-button>
+            </el-input>
+          </el-col>
       </el-row>
       <div class="mainTable">
         <!-- {{tableData3}} -->
         <el-table
                 :header-align="left"
                 :select-on-indeterminate="true"
-                :show-overflow-tooltip="false"
+                :show-overflow-tooltip="true"
                 :data="tableData3"
                  @selection-change="handleSelectionChange"
                 @filter-change="filterChange"
@@ -66,7 +67,7 @@
           <el-table-column
                   prop="cloudServer"
                   label="服务器IP/名称"
-                  width="110">
+                  width="130">
                   <template slot-scope="scope">
                     <router-link :to='{ name: "serverdetails",params: {ip:scope.row.agent_ip,id:scope.row.host_id,zone_id:currentId,guid:scope.row.agent_guid,atype:atype}}'> 
                       <el-button :to='serverdetails' type="text" size="mini">{{scope.row.agent_ip}}</el-button>
@@ -77,18 +78,18 @@
           <el-table-column      
             
             label="规则名称"
-            :show-overflow-tooltip='true'>
+            :show-overflow-tooltip="true">
             <template slot-scope="scope">
-             <!--  {{scope.row.name}} -->
-              <el-tooltip placement="bottom" class="item" effect="dark" :open-delay="500">
+              {{scope.row.name}}
+              <!-- <el-tooltip placement="bottom" class="item" effect="dark" :open-delay="500">
                 <div slot="content">{{scope.row.name}}</div>
                 <div class="itegrityStyle">{{scope.row.name}}</div>
-              </el-tooltip>
+              </el-tooltip> -->
             </template>
             
           </el-table-column>
           <el-table-column
-                  :show-overflow-tooltip="false"
+                  :show-overflow-tooltip="true"
                   prop="status"
                   label="状态"
                   :filters="[{ text: '未处理', value: 1 }, { text: '已处理', value: 0 }]"
@@ -96,28 +97,29 @@
                   column-key = 'filter1'
                   filter-placement="bottom">
             <template slot-scope="scope">
-              {{scope.row.status === 0 ? '已处理' : '未处理'}}
+              <span :class="{'red':scope.row.status==1,'green':scope.row.status==0}">{{scope.row.status === 0 ? '已处理' : '未处理'}}</span>
             </template>
           </el-table-column>
           <el-table-column 
                   label="文件"
-                  width="110">
+                  width="110"
+                  :show-overflow-tooltip="true">
             <template slot-scope="scope">
-              <!-- {{scope.row.path}} -->
-              <el-tooltip 
+              {{scope.row.path==""?"--":scope.row.path}}
+              <!-- <el-tooltip 
                 placement="bottom" 
                 class="item" 
                 effect="dark" 
                 :open-delay= "500">
                 <div slot="content">{{scope.row.path}}</div>
                  <div class="itegrityStyle">{{scope.row.path}}</div>
-               </el-tooltip>
+               </el-tooltip> -->
             </template>
           </el-table-column>
           <el-table-column
-            label="检测周期">
+            label="检测频率">
             <template slot-scope="scope">
-              {{scope.row.checkTime}}
+              {{scope.row.checkTime==""?"--":scope.row.checkTime}}
             </template>
           </el-table-column>
           <el-table-column
@@ -137,29 +139,30 @@
                   label="最近发生时间"
                   width="160">
             <template slot-scope="scope">
-              {{scope.row.LogDate}}
+              {{scope.row.LogDate==""?"--":scope.row.LogDate}}
             </template>
           </el-table-column>
           <el-table-column
             label="描述"
-            >
+            :show-overflow-tooltip="true">
             <template slot-scope="scope">
-              <el-tooltip 
+              {{scope.row.description==""?"--":scope.row.description}}
+              <!-- <el-tooltip 
                 placement="bottom" 
                 class="item" 
                 effect="dark"
-                :open-delay= "500">
-                <!-- open-delay=1000 -->
+                >
+                
                 <div slot="content">{{scope.row.description}}</div>
                 <div class="itegrityStyle">{{scope.row.description}}</div>
-              </el-tooltip>
+              </el-tooltip> -->
             </template>
           </el-table-column>
           <el-table-column
             prop="operation"
             label="操作"
             width="100"
-            show-overflow-tooltip>
+            >
             <template slot-scope="scope">
               <el-button 
                 type="text" 
@@ -177,7 +180,7 @@
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page="currentPage"
-            :page-size="10"
+            :page-size="pageSize"
             layout="total, sizes, prev, pager, next, jumper"
             :total="totalPage">
           </el-pagination>
@@ -189,30 +192,50 @@
     </div>
     <!-- 是否标记为已处理弹框 -->
     <el-dialog style='width:80%;margin:0px auto 50px;'
-        title="选择应用的云服务器"
-        :visible.sync="dialoghandleVisible">
-        <p
-          style="text-align:center;display:block;margin:40px auto;">是否确定标记为已处理</p>
+        title="标记为已处理"
+        :visible.sync="dialoghandleVisible"
+        :close-on-click-modal=false>
+        <!-- <p
+          style="text-align:center;display:block;margin:40px auto;">是否确定标记为已处理</p> -->
+        <div class="content" style="text-align:center;">
+          <div style="margin-right:20px;display:inline-block;">
+            <i>
+              <svg-icon icon-class="warn" style="font-size:50px;color:#f9cd76;"></svg-icon>
+            </i>
+          </div>
+          <div style="display:inline-block;text-align:center;">
+            <p style="color:#666;">是否确定标记为已处理</p>
+            
+          </div>
+        </div>
         <div slot="footer" class="dialog-footer">
           <el-button
             @click="dialoghandleVisible = false"
-            class="f_btn f_btn_l">取 消</el-button>
-          <el-button
+            class="f_btn f_btn_l">取 消</el-button><el-button
             type="primary"
             @click="defIntegrityEventStauts()"
             class="f_btn f_btn_r">确 定</el-button>
         </div>
     </el-dialog>
     <el-dialog style='width:80%;margin:0px auto 50px;'
-        title="选择应用的云服务器"
-        :visible.sync="dialoghandleVisible2">
-        <p
-          style="text-align:center;display:block;margin:40px auto;">是否确定标记为已处理</p>
+        title="标记为已处理"
+        :visible.sync="dialoghandleVisible2"
+        :close-on-click-modal=false>
+        <div class="content" style="text-align:center;">
+          <div style="margin-right:20px;display:inline-block;">
+            <i>
+              <svg-icon icon-class="warn" style="font-size:50px;color:#f9cd76;"></svg-icon>
+            </i>
+          </div>
+          <div style="display:inline-block;text-align:center;">
+            <p style="color:#666;">是否确定标记为已处理</p>
+            
+          </div>
+        </div>
         <div slot="footer" class="dialog-footer">
           <el-button
             @click="dialoghandleVisible2 = false"
-            class="f_btn f_btn_l">取 消</el-button>
-          <el-button
+            class="f_btn f_btn_l">取 消</el-button><el-button
             type="primary"
             @click="changeStatusBtn()"
             class="f_btn f_btn_r">确 定</el-button>
@@ -256,7 +279,8 @@
           dialoghandleVisible2:false,
           row:'',
           tableStatus: '0,1',
-          severity: '7'
+          severity: '7',
+          isActive:false,
         }
       },
       created(){
@@ -268,11 +292,16 @@
         filterChange(value) {
           if(value.filter1){
             // 筛选状态
+            // console.log(this.currentPage,333);
             if(value.filter1.length>0){
-              this.tableStatus = value.filter1.join(',')
+              this.tableStatus = value.filter1.join(',');
+              // this.currentPage = 1;
+              // console.log(this.currentPage,666);
             }else{
               this.tableStatus = '0,1';
             }
+            // console.log(this.currentPage,'===');
+            // this.currentPage = 1;
           }else if(value.filter2){
             // 筛选告警类型
             if(value.filter2.length>0){
@@ -281,27 +310,44 @@
               this.severity = '7'
             }
           }
+          this.currentPage = 1;
           this.getIntegrityEventHostList()
+        },
+        changeSearch(value){
+          // console.log(value,1111);
+          this.currentPage = 1;
+          // console.log(this.currentPage,888);
+          // console.log(returnCitySN["cip"]+','+returnCitySN["cname"]);
+          // console.log(returnCitySN);
+         
+        },
+        //回车事件
+        showCheck:function(ev){
+          // console.log(88888888888)
+          if(ev.keyCode == 13){
+            // alert('你按回车键了');
+            this.getIntegrityEventHostList();
+          }
         },
         // 获取列表
         getIntegrityEventHostList(){
-          console.log(this.currentId,777);
           let ser = 'remoteGetIntegrityEventHostList';
           let paramStr = '<paramStr>{"paramStr":{"currentPage":"'+ this.currentPage +'","status":"'+this.tableStatus+'","severity":"'+this.severity+'","pageSize":'+this.pageSize+',"zoneId":'+this.currentId+',"queryParam":"'+ this.input5 +'"}}</paramStr>';
           integrityEventHostList(ser,paramStr).then(res=>{
             this.totalPage = res.totalElements;
             let tableData3 = res.hostList;
             this.tableData3 = tableData3;
-            console.log(666,this.currentId,res);
             for(var key in tableData3){
               tableData3[key].severityValue = '';
               if(tableData3[key].severity===7){
                 tableData3[key].severityValue = '严重';
               }
-            
+              if(tableData3[key].checkTime!=''&&tableData3[key].checkTime.indexOf(':')==-1){
+                tableData3[key].checkTime = tableData3[key].checkTime + '分钟';
+              }
             }
           }).catch( err => {
-            console.log('获取存储数据失败', err )
+            console.log('获取存储数据失败', err );
           })
         },
         open() {
@@ -326,19 +372,27 @@
             
         // 多选框的选择，选择的每一项的值
         handleSelectionChange(val) {
+
           this.multipleSelection = val;
+          if(this.multipleSelection.length==1){
+            this.isActive = true;
+          }else {
+            this.isActive = false;
+          }
         },
         changeRegion(zone,index) {
-          this.currentId = zone.id
-          this.getIntegrityEventHostList()
+          this.currentId = zone.id;
+          this.currentPage = 1;
+          this.getIntegrityEventHostList();
         },
         handleSizeChange(val) {
           this.pageSize = val;
+          this.currentPage = 1;
           this.getIntegrityEventHostList()
           
         },
             handleCurrentChange(val) {
-              console.log(`第 ${val} 页`);
+              // console.log(`第 ${val} 页`);
               this.currentPage = val;
               this.getIntegrityEventHostList()
               
@@ -383,11 +437,11 @@
               let paramData = "<type>" + this.zoneType + "</type>";
               integrityEventZoneList(ser1, paramData)
                 .then(res => {
-                  console.log("获取地区数量成功", res);
+                  // console.log("获取地区数量成功", res);
                   if (res.length == 0) {
                     this.currentId = zoneAll[0].id;
                   } else {
-                    console.log(this.currentId,8888)
+                    // console.log(this.currentId,8888)
                     for (var item in zoneAll) {
                       let zoneAllNum = res.zoneList;
                       for (var num in zoneAllNum) {
@@ -456,6 +510,7 @@
             handleEventStauts2(){
               this.dialoghandleVisible2 = true;
             },
+            // 上方按钮标记为已处理
             changeStatusBtn(){
               let ser = 'remoteUpdateIntegrityEvent';
               let paramsData = '<ids>'+ this.multipleSelection[0].IntegrityEventID +'</ids>';
@@ -542,33 +597,6 @@
           color: #333333;
           padding: 20px 0px;
         }
-        .areaButton{
-          padding: 0 10px;
-          display: block;
-          min-width: 68px;
-          height: 30px;
-          background: #f0f2f7;
-          float: left;
-          text-align: center;
-          line-height: 30px;
-          border-radius: 5px;
-          margin-right: 10px;
-          font-size: 11px;
-          cursor: pointer;
-          -webkit-user-select:none;
-          -moz-user-select:none;
-          -ms-user-select:none;
-          user-select:none;
-        }
-        .areaButton-bg{
-          background: #f9cd76;
-          color: #ffffff;
-        }
-        .areaButton:hover{
-          background: #f9cd76;
-          color: #ffffff;
-        }
-
       }
       .right{
         /*padding-top: 52px;*/
@@ -626,17 +654,10 @@
     .input-with-select .el-input-group__prepend {
       background-color: #fff;
     }
-    
-    .el-table .el-table__header-wrapper thead tr th{
-      height: 30px;
-      background-color: #f0f2f7;
-      padding:0;
-    }
     .el-table .el-table__body-wrapper tbody tr td{
       height: 35px;
-      padding:2px 0;
+      padding: 0;
     }
-    
     
     .content{
       overflow: hidden;
@@ -660,15 +681,36 @@
           padding:0 20px;
           color:#606266;
         }
+    .actived {
+          background-color:#56d6c4;
+          border:1px solid #56d6c4;
+          height:35px;
+          line-height:35px;
+          padding:0 20px;
+          color:#fff;
+      }
+
     .h_btn:hover {
       background-color: #f0f2f7;
       border:1px solid #f0f2f7;
       color:#606266;
     }
+    .actived:hover {
+        background-color:#56d6c4;
+          border:1px solid #56d6c4;
+          height:35px;
+          line-height:35px;
+          padding:0 20px;
+          color:#fff;
+      }
     .itegrityStyle{
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
+    }
+
+    .el-dialog {
+      margin-top:90px;
     }
    
     .el-dialog__header {
@@ -698,11 +740,23 @@
     }
     .el-dialog__footer .f_btn_l {
       background-color: #f0f2f7;
+      border-top-right-radius:0px;
+      border-bottom-right-radius:0px;
     }
     .el-dialog__footer .f_btn_r {
       background-color: #f9cd76;
+      border-top-left-radius:0px;
+      border-bottom-left-radius:0px;
     }
-    
+    .el-table .cell.el-tooltip {
+      white-space: nowrap !important;
+    } 
+    .red{
+      color:#f6585e;
+    }
+    .green{
+      color:#52ec29;
+    }
   }
 </style>
 

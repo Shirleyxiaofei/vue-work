@@ -26,7 +26,7 @@
       <!-- 最新数据 star -->
       <div class="template_default" v-show="isDefault" v-loading='loading_N'> 
         <div class="fl_r">
-          <el-input placeholder="请输入服务器或IP名称" v-model="search_new_pro" class="input-with-select" size="small" style="width:350px">
+          <el-input placeholder="请输入服务器或IP名称" v-model="search_new_pro" class="input-with-select" size="small" style="width:350px" @change="changeSearch1" @keyup.native='showPorcess'>
             <el-button slot="append" icon="el-icon-search" @click="getNewestProList"></el-button>
           </el-input>
         </div>
@@ -55,7 +55,7 @@
               :show-overflow-tooltip = 'true'
               >
               <template slot-scope="scope" >
-                {{scope.row.process_name}}
+                {{scope.row.process_name==""?"--":scope.row.process_name}}
               </template>
             </el-table-column>
             <el-table-column
@@ -63,21 +63,21 @@
               :show-overflow-tooltip = 'true'
               >
               <template slot-scope="scope">
-                {{scope.row.process_path}}
+                {{scope.row.process_path==""?"--":scope.row.process_path}}
               </template>
             </el-table-column>
             <el-table-column
               :show-overflow-tooltip = 'true'
               label="启动参数" >
               <template slot-scope="scope" >
-                {{scope.row.init_parameters}}
+                {{scope.row.init_parameters==""?"--":scope.row.init_parameters}}
               </template>
             </el-table-column>
             <el-table-column
               label="启动时间"
                width="180">
               <template slot-scope="scope">
-                {{scope.row.init_time}}
+                {{scope.row.init_time==""?"--":scope.row.init_time}}
               </template>
             </el-table-column>
             <el-table-column
@@ -85,7 +85,7 @@
               :show-overflow-tooltip = 'true'
               >
               <template slot-scope="scope">
-                {{scope.row.user}}
+                {{scope.row.user==""?"--":scope.row.user}}
               </template>
             </el-table-column>
             <el-table-column
@@ -93,7 +93,7 @@
              :show-overflow-tooltip = 'true'
               >
               <template slot-scope="scope">
-                {{scope.row.PID}}
+                {{scope.row.PID==""?"--":scope.row.PID}}
               </template>
             </el-table-column>
             <el-table-column
@@ -101,34 +101,38 @@
               :show-overflow-tooltip = 'true'
               >
               <template slot-scope="scope">
-                {{scope.row.ppname}}
+                {{scope.row.ppname==""?"--":scope.row.ppname}}
               </template>
             </el-table-column>
                <el-table-column
               label="上报时间"
               width="180">
               <template slot-scope="scope">
-                {{scope.row.LogDate}}
+                {{scope.row.LogDate==""?"--":scope.row.LogDate}}
               </template>
             </el-table-column>
         </el-table>
         <div class="content-bottom">
           <el-pagination
+            v-if="totalPage_NewestProList>10"
             @size-change="handleSizeChange_N_Pro"
             @current-change="handleCurrentChange_N_Pro"
             :current-page="currentPage_NewestProList"
-            :page-size="10"
+            :page-size="NewestProListSize"
             layout="total, sizes, prev, pager, next, jumper"
             :total="totalPage_NewestProList">
           </el-pagination>
-
+          <el-pagination
+            v-else
+            layout="">
+          </el-pagination>
         </div>
       </div>
       <!-- 最新数据 end -->
       <!-- 历史变动 start -->
       <div class="template_custom" v-show="!isDefault" v-loading='loading_H'>
         <div class="fl_r">
-          <el-input placeholder="请输入服务器或IP名称" v-model="search_his_pro" class="input-with-select" size="small" style="width:350px">
+          <el-input placeholder="请输入服务器或IP名称" v-model="search_his_pro" class="input-with-select" size="small" style="width:350px" @change="changeSearch2">
             <el-button slot="append" icon="el-icon-search" @click="getHistorytProList"></el-button>
           </el-input>
         </div>
@@ -137,7 +141,8 @@
             style="width: 100%">
             <el-table-column
               label="云服务器IP/名称"
-              width="150">
+              width="130"
+              :show-overflow-tooltip = 'true'>
               <template slot-scope="scope">
                 <router-link :to='{ name: "serverdetails",params: {ip:scope.row.agent_ip,id:scope.row.host_id,zone_id: currentId,guid: scope.row.agent_guid,atype: atype}}'> 
                   <el-button size="mini" type="text">
@@ -151,51 +156,51 @@
               label="进程名"
               :show-overflow-tooltip = 'true'>
               <template slot-scope="scope">
-                {{scope.row.process_name}}
+                {{scope.row.process_name==""?"--":scope.row.process_name}}
               </template>
             </el-table-column>
             <el-table-column
               label="变动状态" :show-overflow-tooltip = 'true'>
               <template slot-scope="scope">
                 <!-- {{scope.row.status}} -->
-                {{scope.row.status=='del'?'停止':'新增'}}
+                <span :class="{'red':scope.row.status=='del','green':scope.row.status!='del'}">{{scope.row.status=='del'?'停止':'新增'}}</span>
               </template>
             </el-table-column>
             <el-table-column
               label="进程路径" :show-overflow-tooltip = 'true'>
               <template slot-scope="scope">
-                {{scope.row.process_path}}
+                {{scope.row.process_path==""?"--":scope.row.process_path}}
               </template>
             </el-table-column>
             <el-table-column
               label="启动参数" :show-overflow-tooltip = 'true'>
               <template slot-scope="scope" >
-                {{scope.row.init_parameters}}
+                {{scope.row.init_parameters==""?"--":scope.row.init_parameters}}
               </template>
             </el-table-column>
             <el-table-column
               label="启动时间"
-               width="180">
+               width="150">
               <template slot-scope="scope">
-                {{scope.row.init_time}}
+                {{scope.row.init_time==""?"--":scope.row.init_time}}
               </template>
             </el-table-column>
             <el-table-column
               label="运行用户" width="80" :show-overflow-tooltip = 'true'>
               <template slot-scope="scope">
-                {{scope.row.user}}
+                {{scope.row.user==""?"--":scope.row.user}}
               </template>
             </el-table-column>
             <el-table-column
               label="PID" width="80">
               <template slot-scope="scope">
-                {{scope.row.PID}}
+                {{scope.row.PID==""?"--":scope.row.PID}}
               </template>
             </el-table-column>
             <el-table-column
               label="父进程" :show-overflow-tooltip = 'true'>
               <template slot-scope="scope">
-                {{scope.row.parent_process_name}}
+                {{scope.row.parent_process_name==""?"--":scope.row.parent_process_name}}
               </template>
             </el-table-column>
                <el-table-column
@@ -203,20 +208,24 @@
               width="180"
               >
               <template slot-scope="scope">
-                {{scope.row.lasttime}}
+                {{scope.row.lasttime==""?"--":scope.row.lasttime}}
               </template>
             </el-table-column>
         </el-table>
         <div class="content-bottom">
           <el-pagination
+            v-if="totalPage_HistoryProList>10"
             @size-change="handleSizeChange_H_Pro"
             @current-change="handleCurrentChange_H_Pro"
             :current-page="currentPage_HistoryProList"
-            :page-size="10"
+            :page-size="historyProListSize"
             layout="total, sizes, prev, pager, next, jumper"
             :total="totalPage_HistoryProList">
           </el-pagination>
-
+          <el-pagination
+            v-else
+            layout="">
+          </el-pagination>
         </div>
       </div>
       <!-- 历史变动 end -->
@@ -232,9 +241,9 @@ export default {
     return {
       name: i18n.common.processInventory,
       template_type: "default",
-      atype: '1',
+      atype: '12',
       newestProList: [],
-      NewestProListSize: "10",
+      NewestProListSize: 10,
       ecmListData: [],
       currentPage_NewestProList: 1,
       totalPage_NewestProList: 1,
@@ -242,7 +251,7 @@ export default {
       loading_N: true,
 
       historyProList: [],
-      historyProListSize: "10",
+      historyProListSize: 10,
       currentPage_HistoryProList: 1,
       totalPage_HistoryProList: 1,
       search_his_pro: "",
@@ -327,9 +336,16 @@ export default {
           console.log("获取地区数量失败", err);
         });
     },
+    changeSearch1(value){
+      this.currentPage_NewestProList = 1;
+    },
+    changeSearch2(value){
+      this.currentPage_HistoryProList = 1;
+    },
     handleSizeChange_N_Pro(val) {
       console.log(`每页 ${val} 条`);
       this.NewestProListSize = val;
+      this.currentPage_NewestProList = 1;
       console.log(this.NewestProListSize);
       this.getNewestProList();
     },
@@ -340,14 +356,25 @@ export default {
     handleSizeChange_H_Pro(val) {
       console.log(`每页 ${val} 条`);
       this.historyProListSize = val;
+      this.currentPage_HistoryProList = 1;
       console.log(this.historyProListSize);
       this.getHistorytProList();
     },
     handleCurrentChange_H_Pro(val) {
-      this.currentPage_historyProList = val;
+      console.log(val,7777);
+      this.currentPage_HistoryProList = val;
+      console.log(this.currentPage_historyProList,888);
       this.getHistorytProList();
     },
-    getNewestProList() {
+     //sll添加
+    showPorcess:function(ev){
+      // console.log(88888888888)
+      if(ev.keyCode == 13){
+        // alert('你按回车键了');
+        this.getNewestProList();
+      }
+    },
+    getNewestProList() { 
       console.log(1);
       this.loading_N = true;
       let ser = "getProcessNewEventByAdminId",
@@ -372,6 +399,7 @@ export default {
     getHistorytProList() {
       console.log(2);
       this.loading_H = true;
+      console.log(this.currentPage_historyProList,999)
       let ser = "getProcessHistoryEventByAdminId",
         paramData =
           "<areaZoneId>"+this.currentId+"</areaZoneId><condition>" +
@@ -472,33 +500,6 @@ export default {
         color: #333333;
         padding: 20px 0px;
       }
-      .areaButton {
-        padding: 0 10px;
-        display: block;
-        min-width: 68px;
-        height: 30px;
-        margin-bottom: 15px;
-        background: #f0f2f7;
-        float: left;
-        text-align: center;
-        line-height: 30px;
-        border-radius: 5px;
-        margin-right: 10px;
-        font-size: 11px;
-        cursor: pointer;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-      }
-      .areaButton-bg {
-        background: #f9cd76;
-        color: #ffffff;
-      }
-      .areaButton:hover {
-        background: #f9cd76;
-        color: #ffffff;
-      }
     }
     .ind-header-right {
       line-height: 119px;
@@ -533,14 +534,9 @@ export default {
   .el-select .el-input {
     width: 140px;
   }
-  .el-table .el-table__header-wrapper thead tr th {
-    height: 30px;
-    background-color: #f0f2f7;
-    padding: 0;
-  }
   .el-table .el-table__body-wrapper tbody tr td {
     height: 35px;
-    // padding:8px 0;
+   padding: 0;
   }
   .content {
     overflow: hidden;
@@ -567,6 +563,12 @@ export default {
     line-height:15px;
     font-size:12px;
     margin-top:-5px
+  }
+  .red{
+    color:#f6585e;
+  }
+  .green{
+    color:#52ec29;
   }
 }
 </style>

@@ -440,9 +440,9 @@
 	    margin-bottom: 0;
 	    width: 50%;
 	  }
-	.el-table--border{
+	/* .el-table--border{
 		border:none;
-	}
+	} */
 	.el-table .warning-row {
 	    background-color: #fdf5f5;
 	}

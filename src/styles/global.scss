@@ -126,3 +126,44 @@
     white-space: normal;
     word-break:break-all;
 }
+
+.areaButton {
+	padding: 0 10px;
+	display: block;
+	min-width: 68px;
+	height: 30px;
+	margin-bottom: 15px;
+	background: #f0f2f7;
+	float: left;
+	text-align: center;
+	line-height: 30px;
+	border-radius: 5px;
+	margin-right: 10px;
+	font-size: 12px;
+	cursor: pointer;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+  }
+  .areaButton-bg{
+	background: #f9cd76;
+	color: #ffffff;
+  }
+  .areaButton:hover{
+	background: #f9cd76;
+	color: #ffffff;
+  }
+  .el-table .el-table__header-wrapper thead tr th{
+    font-size:12px;
+    height: 35px;
+    line-height: 35px;
+    color: #333;
+    padding: 0;
+	background-color: #f0f2f7;
+	font-weight: 600
+  }
+.el-table .el-table__body-wrapper tbody tr td{
+	color:#333;
+	font-size: 12px;
+}

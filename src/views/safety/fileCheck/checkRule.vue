@@ -4,45 +4,40 @@
 
       <div class="button">
         <el-row>
-          <el-col :span="17">
+          <el-col :span="15">
+            <router-link to="checkServer">
+              <el-button
+                type="info"
+              
+                :class="{'actived':isActive,'btn':!isActive}"
+                @click="configServerChecked"
+                :disabled="multipleSelection.length!=1"
+                :plain="false">配置生效服务器</el-button>
+            </router-link>
+            <router-link to="checkTime">
+              <el-button
+                type="info"
+                class="actived"
+                @click="configTime"
+                :plain="true">配置检测频率</el-button>
+            </router-link>
             <el-button
               type="info"
-              class="btn"
-              @click="configServerChecked"
-              :plain="true">配置生效服务器</el-button>
-            <el-button
-              type="info"
-              class="btn"
-              @click="configTime"
-              :plain="true">配置检测时间</el-button>
-            <el-button
-              type="info"
-              class="btn"
+              class="actived"
               @click="addRule">添加</el-button>
             <el-button
               type="info"
-              class="btn"
+              
+              :class="{'actived':isActive&&multipleSelection[0].count==0,'btn':!isActive||isActive&&multipleSelection[0].count!=0||multipleSelection[0].Type==2}"
               @click="deleteRule"
-              :plain="true"
+              :plain="false"
+              :disabled="multipleSelection.length!=1"
               >删除</el-button>
           </el-col>
-          <el-col :span="7">
-            <el-autocomplete
-            class="right_input"
-            popper-class="my-autocomplete"
-            v-model="state3"
-            :fetch-suggestions="querySearch"
-            placeholder="请输入规则名称"
-            @select="handleSelect"
-            style="margin-left: -10px;">
-            <i
-              class="el-icon-search el-input__icon"
-              slot="suffix"
-              @click="ruleList">
-            </i>
-              
-     
-          </el-autocomplete>
+          <el-col :span="9">
+            <el-input placeholder="请输入规则名称" v-model="state3" class="input-with-select group" size="small" @change="changeSearch" @keyup.native='showRule'>                
+              <el-button slot="append" icon="el-icon-search" @click="ruleList"></el-button>
+            </el-input>
           </el-col>
         </el-row>
         
@@ -65,20 +60,20 @@
           </el-table-column>
           <el-table-column
             label="规则名称"
-            
+            :show-overflow-tooltip = 'true'
             >
-            <!-- :show-overflow-tooltip = 'true' -->
+            
             <template slot-scope="scope">
-              <!-- {{ scope.row.Name }} -->
-              <el-tooltip 
+              {{ scope.row.Name }}
+              <!-- <el-tooltip 
                 placement="bottom" 
                 class="item" 
                 effect="dark" 
                 :open-delay= "500">
-                <!-- open-delay=1000 -->
+              
                 <div slot="content">{{scope.row.Name}}</div>
                 <div class="itegrityStyle">{{scope.row.Name}}</div>
-              </el-tooltip>
+              </el-tooltip> -->
             </template>
           </el-table-column>
          
@@ -86,11 +81,11 @@
             label="生效服务器"
             width="100">
             <template slot-scope="scope">
-              
-                <el-tooltip class="item" effect="dark" placement="right">
+                {{ scope.row.count }} 
+               <!--  <el-tooltip class="item" effect="dark" placement="right">
                 <div slot="content">生效服务器</div>
                 <span> {{ scope.row.count }} </span>
-                </el-tooltip>
+                </el-tooltip> -->
             </template>
           </el-table-column> 
           <el-table-column
@@ -98,23 +93,25 @@
             width="90"
             :show-overflow-tooltip = 'true'>  
             <template slot-scope="scope">
-              {{scope.row.path}}
+              {{scope.row.path==""?"--":scope.row.path}}
               
             </template>    
           </el-table-column>
           <el-table-column
             prop="excludePatterns"
             label="忽略文件"
-            width="100">  
+            width="100"
+            :show-overflow-tooltip = 'true'>  
             <template slot-scope="scope">
-              <el-tooltip 
+            {{scope.row.excludePatterns==""?"--":scope.row.excludePatterns}}
+              <!-- <el-tooltip 
                 placement="bottom" 
                 class="item" 
                 effect="dark"
                 :open-delay= "500">
                   <div slot="content">{{scope.row.excludePatterns}}</div>
                   <div class="itegrityStyle">{{scope.row.excludePatterns}}</div>
-                </el-tooltip> 
+                </el-tooltip>  -->
               </template>   
           </el-table-column>
           <el-table-column
@@ -130,7 +127,7 @@
             label="最新更新时间"> 
             <!-- sortable -->
             <template slot-scope="scope">
-              {{ scope.row.Issued }}
+              {{ scope.row.Issued==""?"--":scope.row.Issued}}
             </template>  
      
           </el-table-column>
@@ -151,10 +148,12 @@
                 size="small"
                 @click="removeRule(scope.row)"
                 :disabled="scope.row.count>0||scope.row.Type===2||multipleSelection.length>1">删除</el-button>
-              <el-button
-                type="text"
-                size="small"
-                @click="configServer(scope.row)">配置生效服务器</el-button>
+              <router-link to="checkServer">
+                <el-button
+                  type="text"
+                  size="small"
+                  @click="configServer(scope.row)">配置生效服务器</el-button>
+              </router-link>
             </template>
           </el-table-column>
         </el-table>
@@ -164,7 +163,7 @@
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page="currentPage"
-            :page-size="10"
+            :page-size="pageSize"
             layout="total, sizes, prev, pager, next, jumper"
             :total="totalPage">
           </el-pagination>
@@ -257,12 +256,10 @@
 
           </div>
         </el-form>
-        <div slot="footer" class="dialog-footer">
+        <div slot="footer" class="dialog-footer" style="font-size:0;">
           <el-button
             @click="resetForm('addForm')"
-            class="f_btn f_btn_l">取 消</el-button>
-             <!-- dialogFormVisible = false -->
-          <el-button
+            class="f_btn f_btn_l">取 消</el-button><el-button
             type="primary"
             @click="handleAddRule"
             class="f_btn f_btn_r">确 定</el-button>
@@ -272,6 +269,7 @@
       <el-dialog
         title="删除规则"
         :visible.sync="dialogTableVisible"
+        :close-on-click-modal=false
         >
         <div class="content" style="overflow:hidden;">
           <div class="left" style="float:left;margin-right:20px;">
@@ -308,8 +306,7 @@
         <div slot="footer" class="dialog-footer">
           <el-button
             @click="dialogTableVisible = false"
-            class="f_btn f_btn_l">取 消</el-button>
-          <el-button
+            class="f_btn f_btn_l">取 消</el-button><el-button
             type="primary"
             @click="closeRule(tableData[0].IntegrityRuleID)"
             class="f_btn f_btn_r">确 定</el-button>
@@ -319,7 +316,7 @@
       <el-dialog
         title="删除规则"
         :visible.sync="dialogTableVisibleBtn"
-        >
+        :close-on-click-modal=false>
         <div class="content" style="overflow:hidden;">
           <div class="left" style="float:left;margin-right:20px;">
             <i class="">
@@ -355,8 +352,7 @@
         <div slot="footer" class="dialog-footer">
           <el-button
             @click="dialogTableVisibleBtn = false"
-            class="f_btn f_btn_l">取 消</el-button>
-          <el-button
+            class="f_btn f_btn_l">取 消</el-button><el-button
             type="primary"
             @click="deleteRuleBtn(tableData[0].IntegrityRuleID)"
             class="f_btn f_btn_r">确 定</el-button>
@@ -367,7 +363,7 @@
         title="选择应用的云服务器"
         :visible.sync="dialogFormVisible1"
         @close='close1'
-        >
+        :close-on-click-modal=false>
         
         <el-form :model="selectForm">
           <div class="main_top" style="margin-bottom:20px;">
@@ -469,8 +465,7 @@
         <div slot="footer" class="dialog-footer">
           <el-button
             @click="close1"
-            class="f_btn f_btn_l">取 消</el-button>
-          <el-button
+            class="f_btn f_btn_l">取 消</el-button><el-button
             type="primary"
             @click="useCloudRule"
             class="f_btn f_btn_r">应 用</el-button>
@@ -481,7 +476,7 @@
         title="选择应用的云服务器"
         :visible.sync="dialogFormVisibleServer"
         @close='close2'
-        >
+        :close-on-click-modal=false>
         
         <el-form :model="selectForm">
           <div class="main_top" style="margin-bottom:20px;">
@@ -586,19 +581,18 @@
         <div slot="footer" class="dialog-footer">
           <el-button
             @click="close2"
-            class="f_btn f_btn_l">取 消</el-button>
-          <el-button
+            class="f_btn f_btn_l">取 消</el-button><el-button
             type="primary"
             @click="useCloudRule1"
             class="f_btn f_btn_r">应 用</el-button>
         </div>
       </el-dialog>
-      <!-- 配置检测时间 -->
+      <!-- 配置检测频率 -->
       <el-dialog
-        title="配置检测时间"
+        title="配置检测频率"
         :visible.sync="dialogFormVisible2"
         @close="close3"
-        >
+        :close-on-click-modal=false>
         
         <el-form :model="selectForm">
           <div class="main_top" style="margin-bottom:20px;">
@@ -672,7 +666,7 @@
                   <el-button
                     type="text"
                     size="small"
-                    @click="deleteTime(scope.row)">删除</el-button>
+                    @click="deleteTime(scope.row)">关闭</el-button>
                   <el-button
                     type="text"
                     size="small"
@@ -686,8 +680,7 @@
         <div slot="footer" class="dialog-footer">
           <el-button
             @click="close3"
-            class="f_btn f_btn_l">取 消</el-button>
-          <el-button
+            class="f_btn f_btn_l">取 消</el-button><el-button
             type="primary"
             @click="close3"
             class="f_btn f_btn_r">确 定</el-button>
@@ -780,8 +773,7 @@
         <div slot="footer" class="dialog-footer">
           <el-button
             @click="resetForm('updateForm')"
-            class="f_btn f_btn_l">取 消</el-button>
-          <el-button
+            class="f_btn f_btn_l">取 消</el-button><el-button
             type="primary"
             @click="handleUpdateRule()"
             class="f_btn f_btn_r">确 定</el-button>
@@ -974,6 +966,7 @@ export default {
       res:'',
       rows:{},
       zoneId:'',
+      isActive:false,
       // tihsi:tihsi,
 
       rules: {
@@ -1015,21 +1008,20 @@ export default {
     open4(){
         this.$message(this.res);
     },
+    // 分页大小，每页多少条
     handleSizeChange(val) {
-      console.log(`每页 ${val} 条`);
+      // console.log(`每页 ${val} 条`);
       this.pageSize = val;
-
+      this.currentPage = 1;
       this.ruleList();
     },
+    // 分页当前页
     handleCurrentChange(val) {
       this.currentPage = val;
+
       this.ruleList();
     },
-    handleSelect() {},
-    
-    handleIconClick() {},
-
-    
+   
     toggleSelection(rows) {
       if (rows) {
         rows.forEach(row => {
@@ -1041,9 +1033,11 @@ export default {
     },
     handleSelectionChange(val) {
       this.multipleSelection = val;
-      // if(this.multipleSelection.length > 1){
-      //   this.multipleSelection.shift(this.multipleSelection[0]);
-      // }
+      if(this.multipleSelection.length==1){
+            this.isActive = true;
+          }else {
+            this.isActive = false;
+          }
     },
     
     querySearch(queryString, cb) {
@@ -1074,16 +1068,21 @@ export default {
       let checkedCount = value.length;
       this.checkAll = checkedCount === this.cities.length;
       this.isIndeterminate = checkedCount > 0 && checkedCount < this.cities.length;
-      console.log(value.length,888)
+      // console.log(value.length,888)
       if(value.length == 6){
         this.addForm.checkAll = true;
         this.updateForm.checkAll = true;
 
       }
-      console.log(this.addForm.checkAll == false,111);
+      // console.log(this.addForm.checkAll == false,111);
     },
     handleClick(row) {
      
+    },
+    changeSearch(value){
+          // console.log(value,1111);
+          this.currentPage = 1;
+          // console.log(this.currentPage,888);
     },
     //添加规则严重性值
     optionValue(value){
@@ -1185,6 +1184,7 @@ export default {
               }else {
                 this.dialogFormVisible = false;
                 this.open2();
+                this.currentPage = 1;
                 this.ruleList();
                 this.addForm.name = '';
                 this.addForm.description = '';
@@ -1248,16 +1248,16 @@ export default {
           this.checkedCities.push("check_group");
         }
         if(res.check_perm=="true"){
-          console.log(1111);
+          // console.log(1111);
           this.checkedCities.push("check_perm");
         }
         if(res.check_all=="true"){
-          console.log(res.check_all=="true",11122);
+          // console.log(res.check_all=="true",11122);
           this.updateForm.checkAll = true;
           this.isIndeterminate = false;
           // updateForm.isIndeterminate
         }else if(this.checkedCities.length>0&&this.checkedCities.length<6){
-          console.log(0<this.checkedCities.length<6,444)
+          // console.log(0<this.checkedCities.length<6,444)
           this.updateForm.checkAll = false;
           this.isIndeterminate = true;
 
@@ -1372,7 +1372,14 @@ export default {
         }  
           
     },
-          
+    //回车事件
+        showRule:function(ev){
+          // console.log(88888888888)
+          if(ev.keyCode == 13){
+            // alert('你按回车键了');
+            this.ruleList();
+          }
+        },
     // 获取规则列表
     ruleList(){
       let ser = 'remoteGetIntegrityRuleList';
@@ -1403,7 +1410,7 @@ export default {
       
       delIntegrityRule(ser,paramStr).then(res=>{
         this.dialogTableVisible = false;
-        this.$message('删除成功');
+        this.$message(res);
         table = [];
         this.ruleList();
       }).catch(err=>{
@@ -1786,13 +1793,14 @@ export default {
      
       let ser = 'deleteCheckFrenquencyConfig';
       let item = item1;
+      console.log(item,7777);
       let paramStr = '<frenquencyConfigStr>{"agent_guid":"'+ item.agent_guid +'","checkType":"'+ item.checkType +'"}</frenquencyConfigStr>';
       useRule(ser,paramStr).then(res=>{
         if(res=='删除的数据不存在！'){
           this.$message('删除的数据为空，不能删除');
         }else{
           // this.valueTimeCity = '';
-          this.$message('删除成功');
+          this.$message('成功关闭' + item.agent_ip +'('+item.hostname+')'+'文件一致性检测规则频率');
           this.getTimeList(this.timeCity);
         }
         console.log('删除成功',res);
@@ -1860,17 +1868,13 @@ export default {
 
 <style lang="scss" >
   .rule-list{
-    .el-table .el-table__header-wrapper thead tr th {
-      background-color: #f0f2f7;
-      padding: 0;
-      height:35px;
-    }
     .el-table .el-table__body-wrapper tbody tr td {
       height:35px;
       padding: 2px 0;
      
     }
     .el-dialog{
+      margin-top:50px;
       width:40%;
     }
     .el-dialog__header {
@@ -1888,8 +1892,9 @@ export default {
     }
     .el-dialog__footer {
       padding:0;
+      margin:0;
       width: 100%;
-      font-size: 0;
+      font-size: 0 !important;
       
     }
     .el-dialog__footer .f_btn {
@@ -1900,9 +1905,13 @@ export default {
     }
     .el-dialog__footer .f_btn_l {
       background-color: #f0f2f7;
+      border-top-right-radius:0px;
+      border-bottom-right-radius:0px;
     }
     .el-dialog__footer .f_btn_r {
       background-color: #f9cd76;
+      border-top-left-radius:0px;
+      border-bottom-left-radius:0px;
     }
     
     .el-input__inner {
@@ -1979,6 +1988,27 @@ export default {
       height: 35px;
       line-height: 35px;
       padding:0 20px;
+    }
+    .actived {
+          background-color:#56d6c4;
+          border:1px solid #56d6c4;
+          height:35px;
+          line-height:35px;
+          padding:0 20px;
+          color:#fff;
+      }
+    .actived:hover {
+       background-color:#56d6c4;
+          border:1px solid #56d6c4;
+          height:35px;
+          line-height:35px;
+          padding:0 20px;
+          color:#fff;
+    }
+
+    .group {
+      width:350px;
+      margin-left: 30px;
     }
    
   }

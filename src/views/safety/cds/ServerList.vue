@@ -1,5 +1,5 @@
 <template>
-  <div class="ecm_monitor">
+  <div class="ecm_monitor server-list">
     <div class="top">
       <el-row>
           <el-col :span="24">
@@ -17,16 +17,16 @@
       <el-row>
         <el-col :span="15">
           <div class="content-top left">
-            <span @click="openInstallAgent">安装Agent</span>
-            <span @click="openUninstallAgent">卸载Agent</span>
-            <span @click="openProtection">开启防护</span>
-            <span @click="closeProtection">关闭防护</span>
+            <span @click="openInstallAgent" :class="{'changeColor':isChangeColor,'ownColor':!isChangeColor}">安装Agent</span>
+            <span @click="openUninstallAgent" :class="{'changeColor':isChangeColor1,'ownColor':!isChangeColor1}">卸载Agent</span>
+            <span @click="openProtection" :class="{'changeColor':isChangeColor2,'ownColor':!isChangeColor2}">开启防护</span>
+            <span @click="closeProtection" :class="{'changeColor':isChangeColor3,'ownColor':!isChangeColor3}">关闭防护</span>
           </div>
         </el-col>
         <el-col :span="9">
           <div class="content_top right">
-            <el-input placeholder="服务器名称或IP" v-model="input5" class="input-with-select" size="small" style="width:350px">
-                <el-button slot="append" icon="el-icon-search" v-on:click="getServiceList"></el-button>
+            <el-input placeholder="服务器名称或IP" v-model="input5" class="input-with-select" size="small" style="width:350px" @keyup.native='show'>
+                <el-button slot="append" icon="el-icon-search" v-on:click="getServiceListSearch"></el-button>
               </el-input>
           </div>
         </el-col>
@@ -45,7 +45,7 @@
           </el-table-column>
           <el-table-column
             label="服务器IP/名称"
-            width="140">
+            width="100">
             <template slot-scope="scope">
               <router-link :to='{ name: "serverdetails",params: {ip:scope.row.agent_ip,id:scope.row.host_id,zone_id: currentId,guid: scope.row.agent_guid,atype:atype}}'>
                 <el-button size="mini" type="text">
@@ -56,30 +56,54 @@
             </template>
           </el-table-column>
           <el-table-column
-            label="操作系统">
+            prop="os_type"
+            :show-overflow-tooltip="true"
+            width="50"
+            label="">
             <template slot-scope="scope">
-              <el-tooltip placement="bottom" class="item" effect="dark">
-                <div slot="content">{{scope.row.os_type}}</div>
-                <div class="serviceStyle">{{scope.row.os_type}}</div>
-              </el-tooltip>
+              <!--<el-tooltip placement="top" class="item" effect="dark">-->
+                <i class="aside-icon icon20"
+              v-if="scope.row.os_type.indexOf('CentOS') == 0"><svg-icon icon-class='centos'></svg-icon></i>
+              <i class="aside-icon icon20"
+              v-if="scope.row.os_type.indexOf('Red Hat') == 0"><svg-icon icon-class='redhat'></svg-icon></i>
+              <i class="aside-icon icon20"
+              v-if="scope.row.os_type.indexOf('Ubuntu') == 0"><svg-icon icon-class='ubuntu'></svg-icon></i>
+              <i class="aside-icon icon20"
+              v-if="scope.row.os_type.indexOf('Linux') == 0"><svg-icon icon-class='linux'></svg-icon></i> 
+              <span class="icon-hide " slot="content">{{scope.row.os_type}}</span> 
+              <!--</el-tooltip>-->
             </template>
           </el-table-column>
           <el-table-column
             prop="statusName"
             label="防护状态"
             width="100"
-            :filters="[{ text: '未激活', value: '{a:14,b:0}' }, { text: '离线', value: '{a:13,b:0}' },{text: '防护中', value: '{a:12,b:1}'},{text: '关闭防护', value: '{a:12,b:0}'}]"
+            :filters="[{ text: '未激活', value: '{a:14,b:2}' }, { text: '离线', value: '{a:13,b:3}' },{text: '防护中', value: '{a:12,b:1}'},{text: '关闭防护', value: '{a:12,b:0}'}]"
             column-key = 'filter1'
             :filter-multiple="true">
             <template slot-scope="scope">
-              {{scope.row.statusName}}
+            <span :class="{'addWarn redWarn ': scope.row.statusName=='离线','addWarn greenWarn': scope.row.statusName=='防护中','addWarn grayWarn': scope.row.statusName=='未激活'||scope.row.statusName=='关闭防护'}"></span>
+              <span>{{scope.row.statusName}}</span>
+            </template>
+            
+          </el-table-column>
+          <el-table-column
+            label="IP地址"
+            width="100">
+            <template slot-scope="scope">
+              <span size="mini" type="text" class="serverIpStyle serverIpStyle-i">
+                {{scope.row.ipaddress}}
+              </span>
+              <span size="mini" type="text" class="serverIpStyle">
+                {{scope.row.publicip}}
+              </span>
             </template>
           </el-table-column>
           <el-table-column
             prop="protect_level"
             label="防护级别"
             width="100"
-            :filters="[{ text: '基础版', value: '0' }, { text: '专业版', value: '1' }]"
+            :filters="[{ text: '基础版', value: '2' }, { text: '专业版', value: '1' }]"
             column-key = 'filter2'
             :filter-multiple="true">
             <template slot-scope="scope">
@@ -105,7 +129,7 @@
             </template>
           </el-table-column>
           <el-table-column
-            label="文件检测不一致数"
+            label="文件一致性检测"
             width="180">
             <template slot-scope="scope">
               {{scope.row.integrityEventCount}}
@@ -116,14 +140,47 @@
               <el-button
                 size="mini"
                 type="text"
+                :disabled="scope.row.statusName == '关闭防护'||scope.row.statusName == '防护中'"
                 @click="installAgent(scope.row.agent_guid)">安装
               </el-button>
-              <el-button
+              <el-popover trigger="hover" placement="bottom">
+                <p :class="{'server-btn-hover':scope.row.statusName != '未激活','server-btn-hover-i':scope.row.statusName == '未激活'}">
+                  <el-button
+                    size="mini"
+                    type="text"
+                    :disabled="scope.row.statusName == '未激活'"
+                    @click="uninstallAgent(scope.row)"
+                     class="serverBtnColor">卸载
+                  </el-button>
+                </p>
+                <p :class="{'server-btn-hover':scope.row.statusName == '关闭防护','server-btn-hover-i':scope.row.statusName != '关闭防护'}">
+                  <el-button
+                    size="mini"
+                    type="text"
+                    class="serverBtnColor"
+                    :disabled="scope.row.statusName != '关闭防护'"
+                    @click="openProtectionBtn(scope.row)"
+                    >开启防护
+                  </el-button>
+                </p>
+                <p :class="{'server-btn-hover':scope.row.statusName == '防护中','server-btn-hover-i':scope.row.statusName != '防护中'}">
+                  <el-button
+                    size="mini"
+                    type="text"
+                    :disabled="scope.row.statusName != '防护中'"
+                    @click="closeProtectionBtn(scope.row)"
+                    class="serverBtnColor">关闭防护
+                  </el-button>
+                </p>
+                <div slot="reference" class="name-wrapper" style="display:inline-block">
+                  <el-tag size="mini" class="get-more">更多</el-tag>
+                </div>
+              </el-popover>
+              <!--<el-button
                 size="mini"
                 type="text"
-                :disabled="scope.row.agent_statecode !== '12'"
-                @click="uninstallAgent(scope.row)">卸载
-              </el-button>
+                @click="uninstallAgent(scope.row)">更多
+              </el-button>-->
             </template>
           </el-table-column>
         </el-table>
@@ -131,9 +188,9 @@
           <el-pagination
             v-if="totalPage>10"
             @size-change="handleSizeChange"
-            @current-change="getServerRegion"
+            @current-change="handleCurrentChange"
             :current-page="currentPage"
-            :page-size="10"
+            :page-size="pageSize"
             layout="total, sizes, prev, pager, next, jumper"
             :total="totalPage">
           </el-pagination>
@@ -197,8 +254,9 @@
         :visible.sync="dialogTableInstall"
         >
         <div class="content">
-          <span>{{this.agentData.agent_ip}}</span>
-          <span>{{this.agentData.hostname}}</span>
+          <span style="color:#333">{{this.agentData.agent_ip}}</span>
+          <span style="color:#333">{{this.agentData.hostname}}</span>
+          <span style="margin-left:10px;color:#333">( 在您的服务器中以管理员权限执行以下命令进行安装 ) </span>
           <div class="agent_key" style="float:left;margin-right:20px; word-break:break-all;">
             {{this.agentData.useKey}}
           </div>
@@ -233,7 +291,7 @@
           style="width: 100%">
           <el-table-column
             label="服务器名称">
-            <template slot-scope="scope">
+            <template slot-scope="scope"> 
               {{ scope.row.hostname }}
             </template>
           </el-table-column>
@@ -345,8 +403,16 @@
         currentId: 1,
         atype: 1,
         areas: [],
+        isChangeColor: false,
+        isChangeColor1: false,
+        isChangeColor2: false,
+        isChangeColor3: false,
+        isOffline:false,
+        isInPro:false,
+        isOutPro:false,
         agentStateCode:[],
         uninstallData: [],
+        installData: [],
         openProtectionData: [],
         closeProtectionData: [],
         currentPage: 1,
@@ -379,6 +445,17 @@
         // this.getAgentCode()
     },
     methods: {
+      //sll添加
+      show:function(ev){
+        if(ev.keyCode == 13){
+          this.getServiceList();
+        }
+      },
+
+      getServiceListSearch(){
+        this.currentPage = 1;
+        this.getServiceList()
+      },
       dedupe(array){
         return Array.from(new Set(array));
       },
@@ -386,6 +463,7 @@
       filterChange(value) {
 
         if(value.filter1){
+          let arr = [],arr1=[],arr2=[],arr3=[]
           // 筛选状态
           if(value.filter1.length>0){
             for(var i=0;i<value.filter1.length;i++){
@@ -393,8 +471,12 @@
               arr1.push(arr)
               arr2.push(arr1[i].a)
               arr3.push(arr1[i].b)
+              var filterResult = arr3.filter(function(item,index,array){
+                return (item<2)
+              })
+              console.log(123456,filterResult)
               this.tableStatus = this.dedupe(arr2).join(',')
-              this.protect_status = this.dedupe(arr3).join(',')
+              this.protect_status = this.dedupe(filterResult).join(',')
             }
           }else{
             this.tableStatus = '12,13,14';
@@ -404,12 +486,15 @@
           // 筛选告警类型
           if(value.filter2.length>0){
             this.protect_level = value.filter2.join(',')
+            console.log(this.protect_level,999)
           }else{
             this.protect_level = '1,2'
           }
         }
+        this.currentPage = 1;
         this.getServiceList()
       },
+      // 获取列表数据
       getServiceList(){
         let ser2 = 'remoteGetHostList',
             paramStr = '<paramStr>{"paramStr":{ "currentPage":"'+
@@ -426,6 +511,27 @@
       // 没有选中时，弹出提示框
       handleSelectionChange(val){
         this.selectionChange = val;
+        if(val.length != 1 || val[0].agent_statecode == '12'){
+          this.isChangeColor = false;
+        }else{
+          this.isChangeColor = true;
+        }
+        if(val.length != 1 || val[0].statusName == '未激活'){
+          this.isChangeColor1 = false;
+        }else{
+          this.isChangeColor1 = true;
+        }
+        if(val.length != 1 || val[0].statusName != '关闭防护'){
+          this.isChangeColor2 = false;
+        }else{
+          this.isChangeColor2 = true;
+        }
+        if(val.length != 1 || val[0].statusName != '防护中'){
+          this.isChangeColor3 = false;
+        }else{
+          this.isChangeColor3 = true;
+        }
+        // this.isChangeColor = val.length == 1 ? true : false;
       },
       onCopy(){
         this.$message({
@@ -473,15 +579,14 @@
           let uninstallDataList = [];
           uninstallDataList.push(this.selectionChange);
           this.uninstallData = uninstallDataList[0];
-          if(this.uninstallData[0].agent_statecode == '13'){
+          if(this.uninstallData[0].agent_statecode == '14'){
             this.$message({
-              message: '该计算机处于离线状态'
+              message: '该计算机处于未激活状态'
             });
           }else{
             this.agentGuid1 = this.selectionChange[0].agent_guid;
             this.dialogTableUninstall = true;
           }
-          
         }
       },
       //安装
@@ -506,9 +611,23 @@
             message: '只能选择一项数据进行处理'
           });
         }else{
-          this.agentGuid = this.selectionChange[0].agent_guid;
-          this.dialogTableInstall = true;
-          this.getInstallAgent();
+          let installDataList = [];
+          installDataList.push(this.selectionChange);
+          this.installData = installDataList[0];
+          console.log(this.installData)
+          if(this.installData[0].statusName == '关闭防护'){
+            this.$message({
+              message: '该计算机处于关闭防护状态'
+            });
+          }else if(this.installData[0].statusName == '防护中'){
+            this.$message({
+              message: '该计算机处于防护状态'
+            });
+          }else{
+            this.agentGuid = this.selectionChange[0].agent_guid;
+            this.dialogTableInstall = true;
+            this.getInstallAgent();
+          }
         }
       },
       // 安装接口
@@ -528,12 +647,23 @@
         let ser = 'uninstallagent',
             paramStr = '<uninstallStr>{"agent_guid":"'+ this.agentGuid1 +'"}</uninstallStr>';
         serverRegion(ser,paramStr).then( res => {
-
+          this.$message({
+            message: res
+          });
         }).catch( err => {
           console.log( '获取数据失败',err)
         })
       },
       // 开启防护
+      // 开启防护-打开弹框
+      openProtectionBtn(val){
+        this.dialogTableOpenPro = true;
+        let openProtectionBtnList = [];
+        openProtectionBtnList.push(val);
+        this.openProtectionData = openProtectionBtnList;
+        this.agentGuidOpenPro = openProtectionBtnList[0].agent_guid;
+        this.protectStatus = '1';
+      },
       // 开启防护-打开弹框
       openProtection(){
         if(this.selectionChange.length == '0'){
@@ -549,6 +679,7 @@
           openProtectionList.push(this.selectionChange);
           this.agentGuidOpenPro = this.selectionChange[0].agent_guid;
           this.openProtectionData = openProtectionList[0];
+          console.log(this.openProtectionData,9)
           if(this.openProtectionData[0].agent_statecode == "13"){
             this.$message({
               message: '该机器处于离线状态'
@@ -580,6 +711,15 @@
         this.protectStatus = ''
       },
       // 关闭防护
+      // 关闭防护-打开弹框
+      closeProtectionBtn(val){
+        this.dialogTableClosePro = true;
+        let closeProtectionBtnList = [];
+        closeProtectionBtnList.push(val);
+        this.closeProtectionData = closeProtectionBtnList;
+        this.agentGuidOpenPro = closeProtectionBtnList[0].agent_guid;
+        this.protectStatus = '0';
+      },
       // 关闭防护-打开弹框
       closeProtection(){
         if(this.selectionChange.length == '0'){
@@ -625,22 +765,31 @@
         this.closeProtectionData = []
         this.protectStatus = ''
       },
-      // 防护-接口
+      // 开启防护-接口
       getOpenProtection(){
+
+        console.log(this.protectStatus)
         let ser = 'remoteUpdateProtectStatusHost',
             paramStr = '<agent_guid>'+ this.agentGuidOpenPro +'</agent_guid>'+
                        '<protectStatus>'+ this.protectStatus +'</protectStatus>';
         serverRegion(ser,paramStr).then( res => {
+          this.$message({
+            message: res
+          })
           this.getServiceList();
         }).catch( err => {
           console.log('获取数据失败',err)
         })
       },
+      // 关闭防护-接口
       getCloseProtection(){
         let ser = 'remoteUpdateProtectStatusHost',
             paramStr = '<agent_guid>'+ this.agentGuidOpenPro +'</agent_guid>'+
                        '<protectStatus>'+ this.protectStatus +'</protectStatus>';
         serverRegion(ser,paramStr).then( res => {
+          this.$message({
+            message: res
+          })
           this.getServiceList();
         }).catch( err => {
           console.log('获取数据失败',err)
@@ -653,41 +802,99 @@
         return row.protect_level == value;
       },
       handleSizeChange(val) {
-        this.pageSize = val
+        this.currentPage = 1;
+        this.pageSize = val;
+        this.getServiceList();
       },
       handleCurrentChange(val) {
         this.currentPage = val;
+        this.getServiceList();
       },
       changeRegion(zone,index) {
+        this.currentPage = 1;
         this.currentId = zone.id;
         this.getServiceList();
       },
-      getServerRegion(){
-          let ser = 'remoteAllZone',
-              ser1 = 'remoteGetHostZoneList';
-          serverRegion(ser).then( res => {
-            let areaName = res.zonelist;
-            for(var key in areaName){
-                  areaName[key].count = 0;
-                }
-                this.areas = areaName;
-          }).catch( err => {
-            console.log('获取存储数据失败', err )
-          })
-          serverRegion(ser1).then( res => {
-            for(let key in this.areas){
-              let areaCount = res.zoneList;
-                for(let i in areaCount){
-                  if(this.areas[key].id === areaCount[i].zoneId){
-                    this.areas[key].count = areaCount[i].count;
-                  }
+      // getServerRegion(){
+      //     let ser = 'remoteAllZone',
+      //         ser1 = 'remoteGetHostZoneList';
+      //     serverRegion(ser).then( res => {
+      //       let areaName = res.zonelist;
+      //       // for(var key in areaName){
+      //       //       areaName[key].count = 0;
+      //       //     }
+      //           this.areas = areaName;
+      //     }).catch( err => {
+      //       console.log('获取存储数据失败', err )
+      //     })
+      //     serverRegion(ser1).then( res => {
+      //       for(let key in this.areas){
+      //         let areaCount = res.zoneList;
+      //           for(let i in areaCount){
+      //             if(this.areas[key].id === areaCount[i].zoneId){
+      //               this.areas[key].count = areaCount[i].count;
+      //             }
+      //           }
+      //         }
+      //     }).catch( err => {
+      //       console.log('获取存储数据失败', err )
+      //     })
+      // },
+    // 获取地区
+    getServerRegion() {
+      let ser = "remoteAllZone";
+      serverRegion(ser)
+        .then(res => {
+          console.log("获取地区成功", res);
+          // let areaName = res.zonelist;
+          //   // for(var key in areaName){
+          //   //       areaName[key].count = 0;
+          //   //     }
+          //       this.areas = areaName;
+          let zoneAll = res.zonelist;
+          for (var key in zoneAll) {
+            zoneAll[key].count = 0;
+          }
+          this.getexceptionRegionNum(zoneAll);
+        })
+        .catch(err => {
+          console.log("获取地区失败", err);
+        });
+    },
+    //获取地区数量
+    getexceptionRegionNum(zoneAll) {
+      let ser1 = "remoteGetHostZoneList";
+      serverRegion(ser1)
+        .then(res => {
+          console.log("获取地区数量成功", res);
+          if (res.length == 0) {
+            this.currentId = zoneAll[0].id;
+          } else {
+            for (var item in zoneAll) {
+              let zoneAllNum = res.zoneList;
+              for (var num in zoneAllNum) {
+                if (zoneAll[item].id === zoneAllNum[num].zoneId) {
+                  zoneAll[item].count = zoneAllNum[num].count;
                 }
               }
-          }).catch( err => {
-            console.log('获取存储数据失败', err )
-          })
+            }
+            this.areas = zoneAll;
+            for (var i = 0; i < zoneAll.length; i++) {
+              if (zoneAll[i].count > 0) {
+                this.currentId = zoneAll[i].id;
+                return;
+              }
+            }
+          }
+        })
+        .catch(err => {
+          console.log("获取地区数量失败", err);
+        });
       },
 
+    },
+    computed:{
+      
     }
 
   }
@@ -695,21 +902,21 @@
 
 <style lang="scss" scoped="scoped">
   .ecm_monitor{
-
       background: #f6f8fb;
       .el-input{
         float:right;
         margin-right:20px;
       }
      .content{
-        .content_top{
-          background: #ffffff;
-          padding-top: 34px;
-          padding-left: 20px;
-          padding-bottom: 20px;
-          overflow:hidden;
-        }
-        .content-top{
+      background: #ffffff;
+      .content_top{
+        background: #ffffff;
+        padding-top: 34px;
+        padding-left: 20px;
+        padding-bottom: 20px;
+        overflow:hidden;
+      }
+      .content-top{
         width:100%;
         height:100%;
         line-height:82px;
@@ -720,7 +927,6 @@
         overflow:hidden;
         span{
           display: block;
-          padding:0 10px;
           height: 34px;
           background: #f0f2f7;
           float: left;
@@ -728,14 +934,22 @@
           line-height: 34px;
           border-radius: 5px;
           margin-right: 10px;
-          font-size: 11px;
-          padding: 0 19px;
+          font-size: 12px;
+          padding: 0 10px;
           cursor: pointer;
           -webkit-user-select:none;
             -moz-user-select:none;
             -ms-user-select:none;
             user-select:none;
 
+        }
+        .changeColor{
+          background:#56d6c4;
+          color:#ffffff;
+        }
+        .ownColor{
+          background:#f0f2f7;
+          color:#606266
         }
       }
     }
@@ -771,32 +985,6 @@
         color: #333333;
         padding: 20px 0px;
       }
-      .areaButton{
-        display: block;
-        min-width: 68px;
-        height: 30px;
-        margin-bottom: 15px;
-        background: #f0f2f7;
-        float: left;
-        text-align: center;
-        line-height: 30px;
-        border-radius: 5px;
-        margin-right: 10px;
-        font-size: 11px;
-        cursor: pointer;
-        -webkit-user-select:none;
-          -moz-user-select:none;
-          -ms-user-select:none;
-          user-select:none;
-      }
-      .areaButton-bg{
-        background: #f9cd76;
-        color: #ffffff;
-      }
-      .areaButton:hover{
-        background: #f9cd76;
-        color: #ffffff;
-      }
     }
     .right{
         padding-top: 52px;
@@ -830,9 +1018,64 @@
       white-space: nowrap;
       text-overflow: ellipsis;
     }
+    .el-button{
+      border-radius:0;
+    }
+    .el-checkbox-group{
+      text-align:left;
+    }
+    .el-table .cell{
+      text-overflow:useset !important
+    }
   }
 </style>
 <style lang="scss">
+.server-list{
+  .el-table .cell{
+    text-overflow:unset
+  }
+  .el-table .icon20{
+    margin-left:10px;
+  }
+  .serverIpStyle{
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: block;
+    line-height:13px;
+  }
+  .serverIpStyle-i{
+    margin-top: 0px;
+  }
+}
+.el-popover {
+    min-width: 0px;
+    padding:0;
+    position:absolute;
+    left:90% !important;
+    .popper__arrow{
+      left:70% !important;
+    }
+}
+.server-btn-hover-i{
+  text-align:center;
+  padding:0px 10px;
+}
+.server-btn-hover{
+  text-align:center;
+  padding:0px 10px;
+  display:block;
+  .serverBtnColor{
+    color:#333;
+  }
+  &:hover{
+    background:#edf5ff;
+    .serverBtnColor{
+      color:#409EFF;
+    }
+  }
+}
+
 .ecm_monitor{
   .el-dialog__header {
     background-color: #323c4e;
@@ -844,6 +1087,7 @@
       background-color: #fff !important;
     }
   }
+  
   .el-dialog__title {
     color:#e4e5e7;
     font-size: 12px;
@@ -871,6 +1115,7 @@
   }
   .agent_key{
     margin-bottom: 25px;
+    margin-top: 10px;
     border: 1px solid #eee;
     padding: 10px;
   }
@@ -888,15 +1133,7 @@
   .input-with-select .el-input-group__prepend {
     background-color: #fff;
   }
-  .el-table .el-table__header-wrapper thead tr th{
-    font-size: 14px;
-    height: 35px;
-      line-height: 35px;
-      color: #333;
-      padding: 0;
-      background-color: #f0f2f7;
-
-  }
+  
   .el-table .el-table__body-wrapper tbody tr td{
     padding: 2px 0;
   }
@@ -914,10 +1151,16 @@
     border-color: #dcdfe6;
     outline: none;
   }
+  .el-radio-button__inner {
+    border-left: 1px solid #f0f2f7!important;
+  }
   .el-button--mini{
     padding:0;
   }
   .serviceName{
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
     line-height:15px;
     font-size:12px;
     margin-top:-5px
@@ -931,5 +1174,37 @@
   .dialog-footer{
     background:#fff;
   }
+  .addWarn{
+    width:10px;
+    height:10px;
+    margin-bottom:-1px;
+    display:inline-block;
+    border-radius:50%;
+  }
+  .redWarn{
+    background:#f6585e;
+    border:1px solid #f8a8ab;
+  }
+  .greenWarn{
+    background:#52ec29;
+    border:1px solid #aaf595;
+  }
+  .grayWarn{
+    background:#cccccc;
+    border:1px solid #ccc;
+  }
+  .icon-hide{
+    color:transparent;
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:none
+  }
+  .get-more{
+    border:0;
+    background:transparent;
+    cursor:pointer;
+  }
+
+  
 }
-</style>
+</style> 

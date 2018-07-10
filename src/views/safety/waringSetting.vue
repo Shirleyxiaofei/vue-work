@@ -72,7 +72,7 @@
 </template>
 
 <script>
-  import { setEmail } from "@/api/safety";
+  import { setEmail} from "@/api/safety";
 
 
   export default {
@@ -97,13 +97,14 @@
         // }
         ],
         multipleSelection: [],
-        // status:'1'
+        status:'1'
 
 
       }
     },
     created() {
-      this.addsetEmail();
+      // this.addsetEmail();
+      this.getReceivemail()
     },
     methods: {
       checked(){},
@@ -120,23 +121,39 @@
         this.multipleSelection = val;
       },
 
+      getReceivemail(){
+        let ser = 'Receivemail'
+        let paramsData = '';
+        setEmail(ser,paramsData).then(res=>{
+            console.log('获取邮箱状态成功', res);
+            this.status = res
+            if(res==1){
+              this.tableData3[0].checkList = ['邮件']
+            }else{
+              this.tableData3[0].checkList = []
+            }
+        }).catch(err=>{
+            console.log('获取邮箱状态失败', err);
+        })
+      },
+
       addsetEmail(){
-        console.log(123,this.tableData3[0].checkList)
-        let status = 1
-        if(this.tableData3[0].checkList.length==0){
-          status = 0
-        }else{
-          status = 1
-        }
-            let ser = 'setEmail'
-            let paramsData = '<type>email</type><status>'+status+'</status>';
-            setEmail(ser,paramsData).then(res=>{
-                console.log('标记警告邮箱', res);
-            }).catch(err=>{
-                console.log('标记警告邮箱失败', err);
-            })
+        let ser = 'setEmail'
+        let paramsData = '<type>email</type><status>'+ this.status+'</status>';
+        setEmail(ser,paramsData).then(res=>{
+            this.$message(res);
+            console.log('标记警告邮箱', res);
+        }).catch(err=>{
+            console.log('标记警告邮箱失败', err);
+        })
         },
       handleclick() {
+        if(this.tableData3[0].checkList.length>0){
+          this.status = 1
+        }else{
+          this.status = 0          
+        }
+         
         // console.log(111);
         this.addsetEmail()
       }
